@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NYC Pool Bars</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header">
+    <h1 class="logo">
+      <img class="logo-img" src="finallogoupdate.png" alt="NYC Pool Bars" />
+    </h1>
+    <div class="header-user">
+      <span class="header-user-name">@jack</span>
+      <div class="header-user-avatar">
+        J
+        <span class="header-online-dot"></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>Bars</h2>
+        <span class="bar-count" id="bar-count">0</span>
+      </div>
+      <div class="search-wrap">
+        <input type="text" id="search" class="search" placeholder="Search bars..." autocomplete="off" />
+      </div>
+      <div class="sidebar-controls">
+        <div class="control-group">
+          <span class="control-label">Sort by:</span>
+          <div class="control-dropdown" id="sort-dropdown">
+            <button class="control-trigger" id="sort-trigger">
+              <span id="sort-label">Rating</span>
+              <span class="control-arrow">▼</span>
+            </button>
+            <div class="control-menu" id="sort-menu">
+              <button class="control-option selected" data-sort="rating">Rating</button>
+              <button class="control-option" data-sort="name-az">Name (A-Z)</button>
+              <button class="control-option" data-sort="name-za">Name (Z-A)</button>
+            </div>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Filter:</span>
+          <div class="control-dropdown" id="filter-dropdown">
+            <button class="control-trigger" id="filter-trigger">
+              <span id="filter-label">All</span>
+              <span class="control-arrow">▼</span>
+            </button>
+            <div class="control-menu" id="filter-menu">
+              <button class="control-option selected" data-filter="all">All Neighborhoods</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <ul class="bar-list" id="bar-list"></ul>
+      <div class="sidebar-bottom-fade"></div>
+    </aside>
+
+    <div class="map-wrap">
+      <div id="map"></div>
+    </div>
+  </main>
+
+  <!-- Bar Detail Modal -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-container" id="bar-detail">
+      <button type="button" class="modal-close" id="detail-close" aria-label="Close">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="modal-content" id="detail-content"></div>
+    </div>
+  </div>
+
+  <!-- Rating UI -->
+  <div class="rating-ui" id="rating-ui">
+    <div class="rating-ui-content">
+      <header class="rating-header">
+        <button class="back-btn" id="rating-back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          BACK TO LIST
+        </button>
+        <span class="rating-title">RATE THIS POOL BAR</span>
+        <div class="user-profile">
+          <div class="user-info">
+            <div class="user-name">@jack</div>
+          </div>
+          <div class="user-avatar">
+            J
+            <span class="online-dot"></span>
+          </div>
+        </div>
+      </header>
+
+      <div class="establishment-card">
+        <h1 class="establishment-name" id="rating-bar-name">Amsterdam Billiard Club</h1>
+        <div class="establishment-address" id="rating-bar-address">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5-8 12-8 12s-8-7-8-12a8 8 0 0 1 8-8z"/></svg>
+          <span id="rating-address-text">344 Amsterdam Ave, New York, NY 10024</span>
+          <span>•</span>
+          <span id="rating-neighborhood">UPPER WEST SIDE</span>
+        </div>
+      </div>
+
+      <div class="rating-section-header">
+        <span class="rating-section-title">RATE EACH CATEGORY</span>
+        <span class="rating-progress"><span class="completed" id="completed-count">0</span> / 6 Completed</span>
+      </div>
+
+      <div class="rating-grid" id="rating-grid"></div>
+
+      <div class="notes-card">
+        <div class="notes-header">
+          <div class="notes-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+          </div>
+          <div class="notes-info">
+            <h3 class="notes-title">Notes</h3>
+            <p class="notes-subtitle">SHARE ADDITIONAL THOUGHTS OR DETAILS</p>
+          </div>
+        </div>
+        <textarea class="notes-textarea" id="rating-notes" placeholder="What stood out to you? Any specific recommendations or warnings for other players?"></textarea>
+      </div>
+
+      <div class="overall-experience">
+        <div class="overall-experience-label">OVERALL EXPERIENCE</div>
+        <div class="overall-experience-value" id="overall-value">-- <span>/ 5.0</span></div>
+      </div>
+
+      <div class="submit-section">
+        <button class="submit-btn" id="submit-review">
+          SUBMIT REVIEW
+        </button>
+        <p class="submit-disclaimer">By submitting this review, you certify that this feedback is based on your own experience and is your genuine opinion of this establishment.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,312 @@
+{
+  "bars": [
+    {
+      "id": "macdougal-st",
+      "name": "Macdougal St",
+      "neighborhood": "Greenwich Village",
+      "address": "122 MacDougal St, New York, NY 10012",
+      "tableCount": 1,
+      "price": "$1/game",
+      "priceType": "per game",
+      "lat": 40.73002937620787,
+      "lng": -74.00027688795778,
+      "tableBrand": null,
+      "hours": null,
+      "overallRating": 2.5,
+      "ratings": {
+        "tableQuality": 2,
+        "competitionLevel": 3,
+        "atmosphere": 3,
+        "elbowRoom": 1,
+        "waitTime": 3,
+        "cueQuality": 3
+      }
+    },
+    {
+      "id": "barrows-pub",
+      "name": "Barrow's Pub",
+      "neighborhood": "West Village",
+      "address": "463 Hudson St, New York, NY 10014",
+      "tableCount": 1,
+      "price": "$1/game",
+      "priceType": "per game",
+      "lat": 40.731781222122514,
+      "lng": -74.00686681679367,
+      "tableBrand": null,
+      "hours": null,
+      "overallRating": 3.0,
+      "ratings": {
+        "tableQuality": 3,
+        "competitionLevel": 3,
+        "atmosphere": 3,
+        "elbowRoom": 3,
+        "waitTime": 3,
+        "cueQuality": 3
+      }
+    },
+    {
+      "id": "rays",
+      "name": "Rays",
+      "neighborhood": "Lower East Side",
+      "address": "177 Chrystie St, New York, NY 10002",
+      "tableCount": 1,
+      "price": "$1/game",
+      "priceType": "per game",
+      "lat": 40.72124420370724,
+      "lng": -73.99258244748135,
+      "tableBrand": null,
+      "hours": null,
+      "overallRating": 3.3,
+      "ratings": {
+        "tableQuality": 3,
+        "competitionLevel": 2,
+        "atmosphere": 5,
+        "elbowRoom": 3,
+        "waitTime": 4,
+        "cueQuality": 3
+      }
+    },
+    {
+      "id": "cellar-dog",
+      "name": "Cellar Dog",
+      "neighborhood": "West Village",
+      "address": "75 Christopher St, New York, NY 10014",
+      "tableCount": 15,
+      "price": "$20/hour",
+      "priceType": "per hour",
+      "lat": 40.733753928771726,
+      "lng": -74.00319688980898,
+      "tableBrand": null,
+      "hours": null,
+      "overallRating": 4.5,
+      "ratings": {
+        "tableQuality": 5,
+        "competitionLevel": 4,
+        "atmosphere": 5,
+        "elbowRoom": 4,
+        "waitTime": 4,
+        "cueQuality": 5
+      }
+    },
+    {
+      "id": "trionas-on-sullivan",
+      "name": "Trionas on Sullivan",
+      "neighborhood": "Greenwich Village",
+      "address": "237 Sullivan St, New York, NY 10012",
+      "tableCount": 1,
+      "price": "$1/game",
+      "priceType": "per game",
+      "lat": 40.73004968792067,
+      "lng": -73.99939166097316,
+      "tableBrand": null,
+      "hours": null,
+      "overallRating": 2.8,
+      "ratings": {
+        "tableQuality": 3,
+        "competitionLevel": 3,
+        "atmosphere": 3,
+        "elbowRoom": 2,
+        "waitTime": 3,
+        "cueQuality": 3
+      }
+    },
+    {
+      "id": "bleeker-street-bar",
+      "name": "Bleeker Street Bar",
+      "neighborhood": "NoHo",
+      "address": "648 Broadway, New York, NY 10012",
+      "tableCount": 2,
+      "price": "$1/game",
+      "priceType": "per game",
+      "lat": 40.726723753631674,
+      "lng": -73.99533630330154,
+      "tableBrand": null,
+      "hours": null,
+      "overallRating": 3.8,
+      "ratings": {
+        "tableQuality": 4,
+        "competitionLevel": 4,
+        "atmosphere": 4,
+        "elbowRoom": 3,
+        "waitTime": 5,
+        "cueQuality": 3
+      }
+    },
+    {
+      "id": "lucys",
+      "name": "Lucy's",
+      "neighborhood": "East Village",
+      "address": "135 Avenue A, New York, NY 10009",
+      "tableCount": 2,
+      "price": "$1/game",
+      "priceType": "per game",
+      "lat": 40.72720264430989,
+      "lng": -73.98311471864517,
+      "tableBrand": null,
+      "hours": null,
+      "overallRating": 3.5,
+      "ratings": {
+        "tableQuality": 4,
+        "competitionLevel": 4,
+        "atmosphere": 3,
+        "elbowRoom": 4,
+        "waitTime": 3,
+        "cueQuality": 3
+      }
+    },
+    {
+      "id": "mcswiggins",
+      "name": "Mcswiggins",
+      "neighborhood": "Hoboken",
+      "address": "110 1st St, Hoboken, NJ 07030",
+      "tableCount": 1,
+      "price": "$1/game",
+      "priceType": "per game",
+      "lat": 40.73786888634154,
+      "lng": -74.03144563213694,
+      "tableBrand": null,
+      "hours": null,
+      "overallRating": 3.0,
+      "ratings": {
+        "tableQuality": 3,
+        "competitionLevel": 3,
+        "atmosphere": 4,
+        "elbowRoom": 3,
+        "waitTime": 3,
+        "cueQuality": 2
+      }
+    },
+    {
+      "id": "mulligans",
+      "name": "Mulligans",
+      "neighborhood": "Hoboken",
+      "address": "159 1st St, Hoboken, NJ 07030",
+      "tableCount": 1,
+      "price": "$1/game",
+      "priceType": "per game",
+      "lat": 40.73769824021836,
+      "lng": -74.03229058795738,
+      "tableBrand": null,
+      "hours": null,
+      "overallRating": 3.0,
+      "ratings": {
+        "tableQuality": 3,
+        "competitionLevel": 3,
+        "atmosphere": 3,
+        "elbowRoom": 3,
+        "waitTime": 3,
+        "cueQuality": 3
+      }
+    },
+    {
+      "id": "the-shannon",
+      "name": "The Shannon",
+      "neighborhood": "Hoboken",
+      "address": "106 1st St, Hoboken, NJ 07030",
+      "tableCount": 2,
+      "price": "$1/game",
+      "priceType": "per game",
+      "lat": 40.737833669247244,
+      "lng": -74.03134743213695,
+      "tableBrand": null,
+      "hours": null,
+      "overallRating": 3.3,
+      "ratings": {
+        "tableQuality": 4,
+        "competitionLevel": 4,
+        "atmosphere": 2,
+        "elbowRoom": 4,
+        "waitTime": 3,
+        "cueQuality": 3
+      }
+    },
+    {
+      "id": "louise-and-jerrys",
+      "name": "Louise & Jerrys",
+      "neighborhood": "Hoboken",
+      "address": "329 Washington St, Hoboken, NJ 07030",
+      "tableCount": 1,
+      "price": "$2/game",
+      "priceType": "per game",
+      "lat": 40.74103140479875,
+      "lng": -74.02957573213676,
+      "tableBrand": null,
+      "hours": null,
+      "overallRating": 4.0,
+      "ratings": {
+        "tableQuality": 5,
+        "competitionLevel": 5,
+        "atmosphere": 4,
+        "elbowRoom": 3,
+        "waitTime": 3,
+        "cueQuality": 4
+      }
+    },
+    {
+      "id": "the-ale-house",
+      "name": "The Ale House",
+      "neighborhood": "Hoboken",
+      "address": "1034 Willow Ave, Hoboken, NJ 07030",
+      "tableCount": 1,
+      "price": "$1/game",
+      "priceType": "per game",
+      "lat": 40.75044018183256,
+      "lng": -74.03109941864408,
+      "tableBrand": null,
+      "hours": null,
+      "overallRating": 3.0,
+      "ratings": {
+        "tableQuality": 3,
+        "competitionLevel": 4,
+        "atmosphere": 2,
+        "elbowRoom": 3,
+        "waitTime": 3,
+        "cueQuality": 3
+      }
+    },
+    {
+      "id": "madd-hatter",
+      "name": "Madd Hatter",
+      "neighborhood": "Hoboken",
+      "address": "221 Washington St, Hoboken, NJ 07030",
+      "tableCount": 1,
+      "price": "$1/game",
+      "priceType": "per game",
+      "lat": 40.739568898330965,
+      "lng": -74.0298995321369,
+      "tableBrand": null,
+      "hours": null,
+      "overallRating": 2.7,
+      "ratings": {
+        "tableQuality": 3,
+        "competitionLevel": 2,
+        "atmosphere": 2,
+        "elbowRoom": 3,
+        "waitTime": 3,
+        "cueQuality": 3
+      }
+    },
+    {
+      "id": "south-house",
+      "name": "South House",
+      "neighborhood": "Downtown Jersey City",
+      "address": "149 Newark Ave, Jersey City, NJ 07302",
+      "tableCount": 1,
+      "price": "Free",
+      "priceType": "free",
+      "lat": 40.72068999320897,
+      "lng": -74.04414805912242,
+      "tableBrand": null,
+      "hours": null,
+      "overallRating": 2.2,
+      "ratings": {
+        "tableQuality": 1,
+        "competitionLevel": 2,
+        "atmosphere": 3,
+        "elbowRoom": 2,
+        "waitTime": 3,
+        "cueQuality": 2
+      }
+    }
+  ]
+}
