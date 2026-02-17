@@ -1925,6 +1925,28 @@ body {
     width: 100%;
     text-align: center;
   }
+  .notes-card {
+    max-width: 100%;
+    padding: 0.85rem 1rem;
+    margin-bottom: 1.5rem;
+    box-sizing: border-box;
+  }
+  .notes-textarea {
+    min-height: 80px;
+    font-size: 0.8rem;
+    box-sizing: border-box;
+  }
+  .overall-submit-row {
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .submit-btn {
+    padding: 1rem 2rem;
+  }
+  .submit-section {
+    margin-bottom: 1rem;
+  }
 }
 
 /* ===== Mobile Layout ===== */
