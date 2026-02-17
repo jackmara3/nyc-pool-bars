@@ -14,6 +14,8 @@
     'elbowRoom',
     'waitTime',
     'cueQuality',
+    'drinkSelection',
+    'crowdVibe',
   ];
   const RATING_LABELS = {
     tableQuality: 'Table Quality',
@@ -22,6 +24,8 @@
     elbowRoom: 'Elbow Room',
     waitTime: 'Wait Time',
     cueQuality: 'Cue Quality',
+    drinkSelection: 'Drink Selection',
+    crowdVibe: 'Crowd Vibe',
   };
 
   // Map database column names to frontend keys
@@ -32,6 +36,8 @@
     elbow_room: 'elbowRoom',
     wait_time: 'waitTime',
     cue_quality: 'cueQuality',
+    drink_selection: 'drinkSelection',
+    crowd_vibe: 'crowdVibe',
   };
 
   const FRONTEND_TO_DB = {
@@ -41,16 +47,21 @@
     elbowRoom: 'elbow_room',
     waitTime: 'wait_time',
     cueQuality: 'cue_quality',
+    drinkSelection: 'drink_selection',
+    crowdVibe: 'crowd_vibe',
   };
 
   let bars = [];
   let map = null;
   let markers = {};
+  let markerCluster = null;
+  let infoWindow = null;
   let selectedId = null;
   let popupBarId = null; // Track which bar's popup is currently open
   let updatingIcons = false; // Flag to prevent popupclose from interfering during icon updates
   let currentSort = 'rating';
   let currentFilter = 'all';
+  let userLocation = null; // { lat, lng } from geolocation
 
   function overallScore(ratings) {
     const vals = RATING_KEYS.map((k) => ratings[k]).filter((n) => typeof n === 'number');
@@ -82,6 +93,8 @@
     elbowRoom: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"></path></svg>',
     waitTime: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
     cueQuality: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><line x1="4" y1="20" x2="20" y2="4" stroke-width="2.2" stroke-linecap="round"></line><line x1="4" y1="20" x2="7" y2="17" stroke-width="3" stroke-linecap="round"></line></svg>',
+    drinkSelection: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5.5 9h10v8.7a2.3 2.3 0 0 1-2.3 2.3H7.8a2.3 2.3 0 0 1-2.3-2.3V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15.5 10.2h1.6a3 3 0 0 1 0 6h-1.6"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5.5 9c.6-1.4 2-1.8 3-.9 1-.9 2.1-.9 3.1 0 1.1-.9 2.4-.5 2.9.9"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.3 12.2v5.6M11 12.2v5.6M13.7 12.2v5.6"/></svg>',
+    crowdVibe: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 5.5c-4.2 0-7 2.6-7 6s2.8 6 7 6h2.2L18 20v-2.6c1.8-1 3-2.9 3-5.9 0-3.4-2.8-6-7-6h-2z"/></svg>',
   };
 
   function ratingToBall(n) {
@@ -181,12 +194,148 @@
     );
   }
 
+  // ===== Google Places Hours Integration =====
+  function isOpenNow(hoursData) {
+    try {
+      const data = typeof hoursData === 'string' ? JSON.parse(hoursData) : hoursData;
+      if (!data || !data.periods) return null;
+
+      // Get current time in Eastern Time (America/New_York)
+      const now = new Date();
+      const etOptions = { timeZone: 'America/New_York' };
+      const etDay = parseInt(now.toLocaleString('en-US', { ...etOptions, weekday: 'narrow', hour12: false }), 10);
+      // Get the actual day number (0=Sun, 1=Mon, ..., 6=Sat)
+      const etDayNum = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' })).getDay();
+      const etHour = parseInt(now.toLocaleString('en-US', { ...etOptions, hour: 'numeric', hour12: false }), 10);
+      const etMinute = parseInt(now.toLocaleString('en-US', { ...etOptions, minute: 'numeric' }), 10);
+      const currentMinutes = etHour * 60 + etMinute;
+
+      for (const period of data.periods) {
+        const openDay = period.open && period.open.day;
+        const closeDay = period.close && period.close.day;
+        const openMin = period.open ? period.open.hour * 60 + period.open.minute : 0;
+        const closeMin = period.close ? period.close.hour * 60 + period.close.minute : 0;
+
+        if (openDay === etDayNum) {
+          if (closeDay === etDayNum) {
+            if (currentMinutes >= openMin && currentMinutes < closeMin) return true;
+          } else {
+            // Closes next day (e.g. open til 2am)
+            if (currentMinutes >= openMin) return true;
+          }
+        } else if (closeDay === etDayNum) {
+          // Opened yesterday, closes today
+          if (currentMinutes < closeMin) return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function formatHoursForToday(hoursData) {
+    try {
+      const data = typeof hoursData === 'string' ? JSON.parse(hoursData) : hoursData;
+      if (!data) return null;
+
+      // Use weekdayDescriptions if available (e.g. "Monday: 11:00 AM – 2:00 AM")
+      if (data.weekdayDescriptions && data.weekdayDescriptions.length > 0) {
+        // Get current day in Eastern Time
+        const now = new Date();
+        const etDayNum = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' })).getDay();
+        // weekdayDescriptions is Mon-Sun (index 0 = Monday)
+        const descIndex = etDayNum === 0 ? 6 : etDayNum - 1;
+        const desc = data.weekdayDescriptions[descIndex];
+        if (desc) {
+          // Extract just the hours part after the colon
+          const parts = desc.split(': ');
+          return parts.length > 1 ? parts.slice(1).join(': ') : desc;
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function formatAllWeekHours(hoursData) {
+    try {
+      const data = typeof hoursData === 'string' ? JSON.parse(hoursData) : hoursData;
+      if (!data || !data.weekdayDescriptions || data.weekdayDescriptions.length === 0) return null;
+
+      const now = new Date();
+      const etDayNum = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' })).getDay();
+      // weekdayDescriptions is Mon(0)–Sun(6); JS getDay is Sun=0
+      const todayDescIndex = etDayNum === 0 ? 6 : etDayNum - 1;
+
+      return data.weekdayDescriptions.map((desc, i) => {
+        const parts = desc.split(': ');
+        const dayName = parts[0];
+        const hours = parts.length > 1 ? parts.slice(1).join(': ') : desc;
+        const isToday = i === todayDescIndex;
+        return { dayName, hours, isToday };
+      });
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function fetchAndCacheHours(bar) {
+    // Check if we have fresh cached data (less than 24 hours old)
+    if (bar.hoursData && bar.hoursLastUpdated) {
+      const lastUpdated = new Date(bar.hoursLastUpdated);
+      const hoursSince = (Date.now() - lastUpdated.getTime()) / (1000 * 60 * 60);
+      if (hoursSince < 24) {
+        return bar.hoursData;
+      }
+    }
+
+    // No place ID means we can't fetch
+    if (!bar.placeId) return bar.hoursData || null;
+
+    try {
+      const url = `https://places.googleapis.com/v1/places/${bar.placeId}?fields=regularOpeningHours&key=${GOOGLE_PLACES_CONFIG.apiKey}`;
+      const resp = await fetch(url);
+      if (!resp.ok) return bar.hoursData || null;
+
+      const data = await resp.json();
+      const hoursData = data.regularOpeningHours;
+
+      if (hoursData) {
+        const hoursJson = JSON.stringify(hoursData);
+
+        // Cache to Supabase
+        await supabase
+          .from('bars')
+          .update({ hours_data: hoursJson, hours_last_updated: new Date().toISOString() })
+          .eq('id', bar.id);
+
+        // Update local bar object
+        bar.hoursData = hoursJson;
+        bar.hoursLastUpdated = new Date().toISOString();
+
+        return hoursJson;
+      }
+    } catch (e) {
+      console.error('Error fetching hours for', bar.name, e);
+    }
+
+    return bar.hoursData || null;
+  }
+
   function renderDetail(bar) {
     const score = overallScore(bar.ratings);
     const displayScore = score ? score.toFixed(1) : '0';
     const maxScore = 5;
     const reviewCount = bar.reviewCount || 0;
-    const reviewText = reviewCount === 1 ? 'Based on 1 review' : `Based on ${reviewCount} reviews`;
+    const reviewText = reviewCount === 0
+      ? 'No reviews yet'
+      : reviewCount === 1 ? 'Based on 1 review' : `Based on ${reviewCount} reviews`;
+
+    // Determine open/closed status from cached hours
+    const openStatus = bar.hoursData ? isOpenNow(bar.hoursData) : null;
+    const todayHours = bar.hoursData ? formatHoursForToday(bar.hoursData) : null;
 
     let html = '<div class="modal-split">';
 
@@ -200,27 +349,50 @@
     html += '<svg class="location-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5-8 12-8 12s-8-7-8-12a8 8 0 0 1 8-8z"/></svg>';
     html += '<span class="venue-neighborhood">' + escapeHtml(bar.neighborhood) + '</span>';
     html += '</div>';
-    html += '<span class="venue-status"><span class="status-indicator"></span>Open Now</span>';
+    if (openStatus === true) {
+      html += '<span class="venue-status" id="detail-open-status"><span class="status-indicator"></span>Open Now</span>';
+    } else if (openStatus === false) {
+      html += '<span class="venue-status venue-closed" id="detail-open-status"><span class="status-indicator closed"></span>Closed</span>';
+    } else {
+      html += '<span class="venue-status" id="detail-open-status" style="display:none;"></span>';
+    }
     html += '</div>';
     html += '<div class="venue-divider"></div>';
 
     html += '<div class="info-cards">';
 
-    // Tables card with inline SVG icon
+    // Tables card
+    const tableDisplay = bar.tableCount != null ? escapeHtml(String(bar.tableCount)) + (bar.tableCount === 1 ? ' Table Available' : ' Tables Available') : 'Tables available';
+    const tableInfoLink = bar.tableCount == null ? '<span class="info-submit-link" data-info-type="tables" data-bar-id="' + bar.id + '" data-bar-name="' + escapeHtml(bar.name) + '">Know how many tables? Let us know \u2192</span>' : '';
     html += '<div class="info-card"><div class="info-card-icon svg-icon-circle"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#d4af37" class="hours-svg"><rect x="4" y="7" width="16" height="10" rx="1.5" stroke-linecap="round" stroke-linejoin="round"></rect><circle cx="5" cy="8" r="0.9" fill="#d4af37" stroke="none"></circle><circle cx="19" cy="8" r="0.9" fill="#d4af37" stroke="none"></circle><circle cx="5" cy="16" r="0.9" fill="#d4af37" stroke="none"></circle><circle cx="19" cy="16" r="0.9" fill="#d4af37" stroke="none"></circle><circle cx="12" cy="7.5" r="0.8" fill="#d4af37" stroke="none"></circle><circle cx="12" cy="16.5" r="0.8" fill="#d4af37" stroke="none"></circle></svg></div>';
-    html += '<div class="info-card-content"><span class="info-card-label">TABLES</span><span class="info-card-value">' + escapeHtml(String(bar.tableCount)) + ' Tables Available</span><span class="info-card-sub">' + escapeHtml(bar.tableBrand || 'House Tables') + '</span></div></div>';
+    html += '<div class="info-card-content"><span class="info-card-label">TABLES</span><span class="info-card-value">' + tableDisplay + '</span>' + tableInfoLink + '</div></div>';
 
-    // Price card with inline SVG icon
+    // Price card
+    const priceDisplay = bar.price ? escapeHtml(bar.price) : 'Price not listed';
+    const priceInfoLink = !bar.price ? '<span class="info-submit-link" data-info-type="price" data-bar-id="' + bar.id + '" data-bar-name="' + escapeHtml(bar.name) + '">Know the price? Let us know \u2192</span>' : '';
     html += '<div class="info-card"><div class="info-card-icon svg-icon-circle"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="#d4af37" class="hours-svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>';
-    html += '<div class="info-card-content"><span class="info-card-label">PRICE</span><span class="info-card-value">' + escapeHtml(bar.price) + '</span><span class="info-card-sub">' + escapeHtml(bar.priceType || 'per hour per person') + '</span></div></div>';
+    html += '<div class="info-card-content"><span class="info-card-label">PRICE</span><span class="info-card-value">' + priceDisplay + '</span>' + priceInfoLink + '</div></div>';
 
-    // Location card with inline SVG icon
+    // Location card
     html += '<div class="info-card"><div class="info-card-icon svg-icon-circle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#d4af37" class="icon-svg"><path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg></div>';
     html += '<div class="info-card-content"><span class="info-card-label">LOCATION</span><span class="info-card-value">' + escapeHtml(bar.address) + '</span><span class="info-card-sub link">GET DIRECTIONS</span></div></div>';
 
-    // Hours card with inline SVG icon
-    html += '<div class="info-card"><div class="info-card-icon hours-icon-circle"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#d4af37" class="hours-svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>';
-    html += '<div class="info-card-content"><span class="info-card-label">HOURS</span><span class="info-card-value">' + escapeHtml(bar.hours || 'Hours vary') + '</span></div></div>';
+    // Hours card
+    const hoursDisplay = todayHours || 'Loading hours...';
+    const allWeekHours = formatAllWeekHours(bar.hoursData);
+    let weekHoursHtml = '';
+    if (allWeekHours) {
+      weekHoursHtml = '<div class="week-hours" id="detail-week-hours">';
+      allWeekHours.forEach(function(d) {
+        weekHoursHtml += '<div class="week-hours-row' + (d.isToday ? ' week-hours-today' : '') + '"><span class="week-hours-day">' + escapeHtml(d.dayName) + '</span><span class="week-hours-time">' + escapeHtml(d.hours) + '</span></div>';
+      });
+      weekHoursHtml += '</div>';
+    }
+    html += '<div class="info-card hours-card-expandable"><div class="info-card-icon hours-icon-circle"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#d4af37" class="hours-svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>';
+    html += '<div class="info-card-content"><span class="info-card-label">TODAY\'S HOURS</span><span class="info-card-value" id="detail-hours-value">' + escapeHtml(hoursDisplay) + '</span>';
+    html += '<span class="see-all-hours" id="see-all-hours-toggle" onclick="(function(e){var card=e.closest(\'.hours-card-expandable\');card.classList.toggle(\'expanded\');})(this)">See all hours <span class="see-all-hours-arrow">▼</span></span>';
+    html += weekHoursHtml;
+    html += '</div></div>';
 
     html += '</div>';
 
@@ -237,24 +409,42 @@
     html += renderStars(score);
     html += '</div>';
 
-    html += '<div class="overall-rating-card">';
-    html += '<div class="overall-rating-info">';
-    html += '<span class="overall-label">OVERALL RATING</span>';
-    html += '<div class="overall-score-display"><span class="score-big">' + displayScore + '</span></div>';
-    html += '<span class="overall-sub">out of ' + maxScore + '.0</span>';
-    html += '</div>';
-    html += renderProgressRing(score || 0, maxScore);
-    html += '</div>';
+    if (reviewCount === 0) {
+      // No reviews state
+      html += '<div class="no-reviews-state">';
+      html += '<div class="overall-rating-card">';
+      html += '<div class="overall-rating-info">';
+      html += '<span class="overall-label">OVERALL RATING</span>';
+      html += '<div class="overall-score-display"><span class="score-big">--</span></div>';
+      html += '<span class="overall-sub">No ratings yet</span>';
+      html += '</div>';
+      html += renderProgressRing(0, maxScore);
+      html += '</div>';
+      html += '<div class="ratings-section" style="display:flex;align-items:center;justify-content:center;min-height:120px;"><span style="font-family:var(--font-display);font-size:0.85rem;font-style:italic;color:rgba(255,255,255,0.4);">Be the first to rate this bar!</span></div>';
+      html += '</div>';
+    } else {
+      html += '<div class="overall-rating-card">';
+      html += '<div class="overall-rating-info">';
+      html += '<span class="overall-label">OVERALL RATING</span>';
+      html += '<div class="overall-score-display"><span class="score-big">' + displayScore + '</span></div>';
+      html += '<span class="overall-sub">out of ' + maxScore + '.0</span>';
+      html += '</div>';
+      html += renderProgressRing(score || 0, maxScore);
+      html += '</div>';
 
-    html += '<div class="ratings-section">';
-    RATING_KEYS.forEach((k) => {
-      if (bar.ratings[k] != null) html += renderRatingRow(k, bar.ratings[k], bar.id + '-' + k);
-    });
-    html += '</div>';
+      html += '<div class="ratings-section">';
+      const SCORECARD_ORDER = ['atmosphere', 'crowdVibe', 'drinkSelection', 'tableQuality', 'cueQuality', 'elbowRoom', 'competitionLevel', 'waitTime'];
+      SCORECARD_ORDER.forEach((k) => {
+        if (bar.ratings[k] != null) html += renderRatingRow(k, bar.ratings[k], bar.id + '-' + k);
+      });
+      html += '</div>';
+    }
 
-    html += '<div class="modal-footer">';
-    html += '<span class="modal-footer-text">Ratings updated in real-time • Community verified</span>';
-    html += '</div>';
+    if (reviewCount > 0) {
+      html += '<div class="modal-footer">';
+      html += '<span class="modal-footer-text">Ratings updated in real-time • Community verified</span>';
+      html += '</div>';
+    }
 
     html += '</div>';
     html += '</div>';
@@ -279,20 +469,59 @@
     // Update all marker icons - selected bar gets highlight style
     updatingIcons = true;
     Object.keys(markers).forEach((id) => {
-      const m = markers[id];
-      m.setIcon(createPinIcon(id === bar.id));
+      markers[id].setIcon(createPinIcon(id === bar.id));
     });
     const m = markers[bar.id];
     if (m) {
       popupBarId = bar.id;
-      m.openPopup();
-      map.flyTo([bar.lat, bar.lng], map.getZoom(), { duration: 0.3 });
+      // Zoom in if needed so marker is unclustered
+      if (map.getZoom() < 14) {
+        map.setZoom(14);
+      }
+      map.panTo({ lat: bar.lat, lng: bar.lng });
+      setTimeout(() => {
+        infoWindow.setContent(buildPopupContent(bar));
+        infoWindow.open({ anchor: m, map: map });
+      }, 300);
     }
     updatingIcons = false;
 
     const list = document.getElementById('bar-list');
     list.querySelectorAll('.bar-list-item').forEach((el) => {
       el.classList.toggle('active', el.dataset.id === bar.id);
+    });
+
+    // Asynchronously fetch and update hours
+    fetchAndCacheHours(bar).then((hoursData) => {
+      if (!hoursData) return;
+      const hoursEl = document.getElementById('detail-hours-value');
+      const statusEl = document.getElementById('detail-open-status');
+      if (hoursEl) {
+        const todayHours = formatHoursForToday(hoursData);
+        hoursEl.textContent = todayHours || 'Hours not available';
+      }
+      if (statusEl) {
+        const open = isOpenNow(hoursData);
+        if (open === true) {
+          statusEl.innerHTML = '<span class="status-indicator"></span>Open Now';
+          statusEl.className = 'venue-status';
+          statusEl.style.display = '';
+        } else if (open === false) {
+          statusEl.innerHTML = '<span class="status-indicator closed"></span>Closed';
+          statusEl.className = 'venue-status venue-closed';
+          statusEl.style.display = '';
+        }
+      }
+      // Update weekly hours
+      const weekEl = document.getElementById('detail-week-hours');
+      if (weekEl) {
+        const allWeekHours = formatAllWeekHours(hoursData);
+        if (allWeekHours) {
+          weekEl.innerHTML = allWeekHours.map(function(d) {
+            return '<div class="week-hours-row' + (d.isToday ? ' week-hours-today' : '') + '"><span class="week-hours-day">' + d.dayName + '</span><span class="week-hours-time">' + d.hours + '</span></div>';
+          }).join('');
+        }
+      }
     });
   }
 
@@ -301,29 +530,12 @@
     document.getElementById('modal-overlay').classList.remove('open');
     document.body.style.overflow = '';
 
-    // Find which marker has an open popup
-    let openPopupId = null;
-    Object.keys(markers).forEach((id) => {
-      if (markers[id].isPopupOpen()) {
-        openPopupId = id;
-      }
-    });
-
-    // Set flag to prevent popupclose from interfering
     updatingIcons = true;
 
-    // Reset markers - keep the one with open popup highlighted
+    // Reset markers - keep the one with open InfoWindow highlighted
     Object.keys(markers).forEach((id) => {
-      const m = markers[id];
-      const shouldHighlight = id === openPopupId;
-      m.setIcon(createPinIcon(shouldHighlight));
+      markers[id].setIcon(createPinIcon(id === popupBarId));
     });
-
-    // If a popup was open, make sure it stays open (setIcon might close it)
-    if (openPopupId && markers[openPopupId]) {
-      popupBarId = openPopupId;
-      markers[openPopupId].openPopup();
-    }
 
     updatingIcons = false;
 
@@ -333,44 +545,35 @@
   }
 
   function createPinIcon(highlight) {
-    const div = document.createElement('div');
-    let className = 'pin-marker';
-    if (highlight) className += ' highlight';
-    div.className = className;
-
-    // Circular pins: anchor at center
-    const size = highlight ? 24 : 16;
-    return L.divIcon({
-      html: div,
-      className: '',
-      iconSize: [size, size],
-      iconAnchor: [size / 2, size / 2],
-    });
+    if (highlight) {
+      return {
+        url: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><circle cx="12" cy="12" r="9" fill="#1a3a2a" stroke="#d4af37" stroke-width="3"/></svg>'),
+        scaledSize: new google.maps.Size(24, 24),
+        anchor: new google.maps.Point(12, 12),
+      };
+    }
+    return {
+      url: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="6" fill="#d4af37" stroke="rgba(0,0,0,0.2)" stroke-width="2"/></svg>'),
+      scaledSize: new google.maps.Size(16, 16),
+      anchor: new google.maps.Point(8, 8),
+    };
   }
 
   function addBarToMap(bar, popupContent) {
-    const icon = createPinIcon(false);
-    const marker = L.marker([bar.lat, bar.lng], { icon })
-      .addTo(map)
-      .bindPopup(popupContent);
+    const marker = new google.maps.Marker({
+      position: { lat: bar.lat, lng: bar.lng },
+      icon: createPinIcon(false),
+      title: bar.name,
+    });
 
-    // When popup opens (pin clicked), highlight this pin and reset others
-    marker.on('popupopen', () => {
-      // Reset previous popup bar's pin if different
+    marker.addListener('click', () => {
       if (popupBarId && popupBarId !== bar.id && markers[popupBarId]) {
         markers[popupBarId].setIcon(createPinIcon(false));
       }
       popupBarId = bar.id;
       marker.setIcon(createPinIcon(true));
-    });
-
-    // When popup closes, reset pin to default (unless detail card is open or we're updating icons)
-    marker.on('popupclose', () => {
-      if (updatingIcons) return; // Don't interfere during icon updates
-      popupBarId = null;
-      if (selectedId !== bar.id) {
-        marker.setIcon(createPinIcon(false));
-      }
+      infoWindow.setContent(popupContent);
+      infoWindow.open({ anchor: marker, map: map });
     });
 
     markers[bar.id] = marker;
@@ -378,12 +581,15 @@
 
   function buildPopupContent(bar) {
     const score = overallScore(bar.ratings);
-    const scoreDisplay = score != null ? score.toFixed(1) : '—';
+    const hasReviews = bar.reviewCount > 0;
+    const ratingHtml = hasReviews
+      ? '<span class="popup-rating"><span class="popup-rating-star">★</span> ' + score.toFixed(1) + '</span>'
+      : '';
     return (
       '<div class="popup-name">' + escapeHtml(bar.name) + '</div>' +
       '<div class="popup-meta">' +
       '<span>' + escapeHtml(bar.neighborhood) + '</span>' +
-      '<span class="popup-rating"><span class="popup-rating-star">★</span> ' + scoreDisplay + '</span>' +
+      ratingHtml +
       '</div>' +
       '<a href="#" class="popup-view-link" data-bar-id="' + bar.id + '">View Full Scorecard →</a>'
     );
@@ -391,7 +597,7 @@
 
   function renderListItem(bar) {
     const score = overallScore(bar.ratings);
-    const scoreStr = score != null ? score.toFixed(1) : '—';
+    const scoreStr = (score != null && bar.reviewCount > 0) ? score.toFixed(1) : '—';
     const li = document.createElement('li');
     li.className = 'bar-list-item';
     li.dataset.id = bar.id;
@@ -426,6 +632,15 @@
           return a.name.localeCompare(b.name);
         });
         break;
+      case 'nearest':
+        if (userLocation) {
+          sorted.sort((a, b) => {
+            const distA = (a.lat - userLocation.lat) ** 2 + (a.lng - userLocation.lng) ** 2;
+            const distB = (b.lat - userLocation.lat) ** 2 + (b.lng - userLocation.lng) ** 2;
+            return distA - distB;
+          });
+        }
+        break;
       default:
         sorted.sort((a, b) => (b.overallScore || 0) - (a.overallScore || 0));
     }
@@ -435,6 +650,14 @@
   function filterBars(query) {
     const q = (query || '').trim().toLowerCase();
     let filtered = bars;
+
+    // Apply map bounds filter
+    if (map) {
+      const bounds = map.getBounds();
+      if (bounds) {
+        filtered = filtered.filter((b) => bounds.contains({ lat: b.lat, lng: b.lng }));
+      }
+    }
 
     // Apply neighborhood filter
     if (currentFilter !== 'all') {
@@ -471,26 +694,123 @@
     filtered.forEach((bar) => list.appendChild(renderListItem(bar)));
   }
 
-  function initMap() {
-    map = L.map('map', {
-      center: [40.72, -74.0],
-      zoom: 11,
-      zoomControl: false,
-    });
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
+  var DARK_MAP_STYLES = [
+    { elementType: 'geometry', stylers: [{ color: '#212121' }] },
+    { elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
+    { elementType: 'labels.text.fill', stylers: [{ color: '#757575' }] },
+    { elementType: 'labels.text.stroke', stylers: [{ color: '#212121' }] },
+    { featureType: 'administrative', elementType: 'geometry', stylers: [{ color: '#757575' }] },
+    { featureType: 'administrative.country', elementType: 'labels.text.fill', stylers: [{ color: '#9e9e9e' }] },
+    { featureType: 'administrative.land_parcel', stylers: [{ visibility: 'off' }] },
+    { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#bdbdbd' }] },
+    { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#757575' }] },
+    { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#181818' }] },
+    { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#616161' }] },
+    { featureType: 'poi.park', elementType: 'labels.text.stroke', stylers: [{ color: '#1b1b1b' }] },
+    { featureType: 'road', elementType: 'geometry.fill', stylers: [{ color: '#2c2c2c' }] },
+    { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#8a8a8a' }] },
+    { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#373737' }] },
+    { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#3c3c3c' }] },
+    { featureType: 'road.highway.controlled_access', elementType: 'geometry', stylers: [{ color: '#4e4e4e' }] },
+    { featureType: 'road.local', elementType: 'labels.text.fill', stylers: [{ color: '#616161' }] },
+    { featureType: 'transit', elementType: 'labels.text.fill', stylers: [{ color: '#757575' }] },
+    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#000000' }] },
+    { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#3d3d3d' }] },
+  ];
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd',
-      maxZoom: 20,
-    }).addTo(map);
+  function initMap() {
+    map = new google.maps.Map(document.getElementById('map'), {
+      center: { lat: 40.72, lng: -74.0 },
+      zoom: 11,
+      styles: DARK_MAP_STYLES,
+      zoomControl: true,
+      zoomControlOptions: {
+        position: google.maps.ControlPosition.RIGHT_BOTTOM,
+      },
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+    });
+
+    infoWindow = new google.maps.InfoWindow();
+
+    infoWindow.addListener('closeclick', () => {
+      if (updatingIcons) return;
+      if (popupBarId && markers[popupBarId] && selectedId !== popupBarId) {
+        markers[popupBarId].setIcon(createPinIcon(false));
+      }
+      popupBarId = null;
+    });
+
+    infoWindow.addListener('close', () => {
+      if (updatingIcons) return;
+      if (popupBarId && markers[popupBarId] && selectedId !== popupBarId) {
+        markers[popupBarId].setIcon(createPinIcon(false));
+      }
+      popupBarId = null;
+    });
+
+    // Close InfoWindow when clicking on the map background
+    map.addListener('click', () => {
+      infoWindow.close();
+    });
 
     bars.forEach((bar) => {
       addBarToMap(bar, buildPopupContent(bar));
     });
 
-    const group = L.featureGroup(Object.values(markers));
-    if (group.getBounds().isValid()) map.fitBounds(group.getBounds(), { padding: [24, 24], maxZoom: 12 });
+    markerCluster = new markerClusterer.MarkerClusterer({
+      map: map,
+      markers: Object.values(markers),
+      algorithm: new markerClusterer.SuperClusterAlgorithm({ radius: 30, maxZoom: 14 }),
+      onClusterClick: function(event, cluster, gMap) {
+        var pos = cluster.position;
+        var currentZoom = gMap.getZoom() || 11;
+        gMap.panTo(pos);
+        gMap.setZoom(currentZoom + 2);
+      },
+      renderer: {
+        render: function({ count, position }) {
+          return new google.maps.Marker({
+            position: position,
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: count < 10 ? 16 : count < 50 ? 20 : 24,
+              fillColor: '#d4af37',
+              fillOpacity: 1,
+              strokeColor: 'rgba(0,0,0,0.3)',
+              strokeWeight: 2,
+            },
+            label: {
+              text: String(count),
+              color: '#0a2216',
+              fontFamily: 'Inter, sans-serif',
+              fontSize: '12px',
+              fontWeight: '600',
+            },
+            zIndex: Number(google.maps.Marker.MAX_ZINDEX) + count,
+          });
+        },
+      },
+    });
+
+    if (Object.keys(markers).length > 0) {
+      var bounds = new google.maps.LatLngBounds();
+      bars.forEach(function(bar) {
+        bounds.extend({ lat: bar.lat, lng: bar.lng });
+      });
+      map.fitBounds(bounds, { top: 24, right: 24, bottom: 24, left: 24 });
+      var initListener = google.maps.event.addListener(map, 'idle', function() {
+        if (map.getZoom() > 12) map.setZoom(12);
+        google.maps.event.removeListener(initListener);
+      });
+    }
+
+    // Update sidebar when map view changes
+    map.addListener('idle', function() {
+      var searchInput = document.getElementById('search');
+      updateList(filterBars(searchInput ? searchInput.value : ''));
+    });
   }
 
   function initSearch() {
@@ -528,6 +848,40 @@
     options.forEach((option) => {
       option.addEventListener('click', () => {
         const sortType = option.dataset.sort;
+
+        if (sortType === 'nearest') {
+          if (userLocation) {
+            // Already have location, just sort
+            currentSort = sortType;
+            options.forEach((o) => o.classList.remove('selected'));
+            option.classList.add('selected');
+            label.textContent = option.textContent;
+            dropdown.classList.remove('open');
+            const searchInput = document.getElementById('search');
+            updateList(filterBars(searchInput.value));
+          } else if (!navigator.geolocation) {
+            dropdown.classList.remove('open');
+            alert('Your browser doesn\'t support geolocation. Please try a different sort option.');
+          } else {
+            dropdown.classList.remove('open');
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+                currentSort = sortType;
+                options.forEach((o) => o.classList.remove('selected'));
+                option.classList.add('selected');
+                label.textContent = option.textContent;
+                const searchInput = document.getElementById('search');
+                updateList(filterBars(searchInput.value));
+              },
+              () => {
+                alert('Location access is needed to sort by nearest bars. Please enable location permissions in your browser settings and try again.');
+              }
+            );
+          }
+          return;
+        }
+
         currentSort = sortType;
 
         options.forEach((o) => o.classList.remove('selected'));
@@ -607,12 +961,14 @@
 
   // ===== Rating UI =====
   const RATING_CATEGORIES = [
-    { key: 'tableQuality', title: 'Table Quality', subtitle: 'CLOTH CONDITION, LEVELNESS, RAILS', labelLeft: 'ROUGH', labelRight: 'PRISTINE', icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><rect x="4" y="7" width="16" height="10" rx="1.5" stroke-linecap="round" stroke-linejoin="round"></rect><circle cx="5" cy="8" r="0.9" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle><circle cx="19" cy="8" r="0.9" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle><circle cx="5" cy="16" r="0.9" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle><circle cx="19" cy="16" r="0.9" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle><circle cx="12" cy="7.5" r="0.8" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle><circle cx="12" cy="16.5" r="0.8" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle></svg>' },
-    { key: 'competitionLevel', title: 'Competition', subtitle: 'PLAYER SKILL LEVEL', labelLeft: 'CASUALS', labelRight: 'SHARKS', icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>' },
     { key: 'atmosphere', title: 'Atmosphere', subtitle: 'LIGHTING, MUSIC, VIBE', labelLeft: 'BEAT', labelRight: 'ELECTRIC', icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"></path></svg>' },
-    { key: 'elbowRoom', title: 'Elbow Room', subtitle: 'SPACE AROUND TABLES, CROWDING', labelLeft: 'TIGHT', labelRight: 'SPACIOUS', icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"></path></svg>' },
-    { key: 'waitTime', title: 'Wait Time', subtitle: 'TABLE AVAILABILITY', labelLeft: 'LONG WAITS', labelRight: 'NO WAIT', icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' },
+    { key: 'crowdVibe', title: 'Crowd Vibe', subtitle: 'FRIENDLINESS, CONVERSATION', labelLeft: 'RESERVED', labelRight: 'WELCOMING', icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 5.5c-4.2 0-7 2.6-7 6s2.8 6 7 6h2.2L18 20v-2.6c1.8-1 3-2.9 3-5.9 0-3.4-2.8-6-7-6h-2z"/></svg>' },
+    { key: 'drinkSelection', title: 'Drink Selection', subtitle: 'VARIETY, PRICING, QUALITY', labelLeft: 'BASIC', labelRight: 'ELITE', icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5.5 9h10v8.7a2.3 2.3 0 0 1-2.3 2.3H7.8a2.3 2.3 0 0 1-2.3-2.3V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15.5 10.2h1.6a3 3 0 0 1 0 6h-1.6"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5.5 9c.6-1.4 2-1.8 3-.9 1-.9 2.1-.9 3.1 0 1.1-.9 2.4-.5 2.9.9"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.3 12.2v5.6M11 12.2v5.6M13.7 12.2v5.6"/></svg>' },
+    { key: 'tableQuality', title: 'Table Quality', subtitle: 'CLOTH CONDITION, LEVELNESS, RAILS', labelLeft: 'ROUGH', labelRight: 'PRISTINE', icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><rect x="4" y="7" width="16" height="10" rx="1.5" stroke-linecap="round" stroke-linejoin="round"></rect><circle cx="5" cy="8" r="0.9" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle><circle cx="19" cy="8" r="0.9" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle><circle cx="5" cy="16" r="0.9" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle><circle cx="19" cy="16" r="0.9" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle><circle cx="12" cy="7.5" r="0.8" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle><circle cx="12" cy="16.5" r="0.8" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle></svg>' },
     { key: 'cueQuality', title: 'Cue Quality', subtitle: 'STICK CONDITION, CHALK, TIPS', labelLeft: 'ROUGH', labelRight: 'PRO GRADE', icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><line x1="4" y1="20" x2="20" y2="4" stroke-width="2.2" stroke-linecap="round"></line><line x1="4" y1="20" x2="7" y2="17" stroke-width="3" stroke-linecap="round"></line></svg>' },
+    { key: 'elbowRoom', title: 'Elbow Room', subtitle: 'SPACE AROUND TABLES, CROWDING', labelLeft: 'TIGHT', labelRight: 'SPACIOUS', icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"></path></svg>' },
+    { key: 'competitionLevel', title: 'Competition', subtitle: 'PLAYER SKILL LEVEL', labelLeft: 'CASUALS', labelRight: 'SHARKS', icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>' },
+    { key: 'waitTime', title: 'Wait Time', subtitle: 'TABLE AVAILABILITY', labelLeft: 'LONG WAITS', labelRight: 'NO WAIT', icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' },
   ];
 
   let currentRatingBar = null;
@@ -739,7 +1095,7 @@
 
     // Enable/disable submit
     const submitBtn = document.getElementById('submit-review');
-    if (completed === 6) {
+    if (completed === RATING_CATEGORIES.length) {
       submitBtn.classList.add('enabled');
     } else {
       submitBtn.classList.remove('enabled');
@@ -747,7 +1103,7 @@
   }
 
   async function submitReview() {
-    if (Object.keys(userRatings).length !== 6 || !currentRatingBar) {
+    if (Object.keys(userRatings).length !== RATING_CATEGORIES.length || !currentRatingBar) {
       return;
     }
 
@@ -763,6 +1119,8 @@
       elbow_room: userRatings.elbowRoom,
       wait_time: userRatings.waitTime,
       cue_quality: userRatings.cueQuality,
+      drink_selection: userRatings.drinkSelection,
+      crowd_vibe: userRatings.crowdVibe,
       notes: notes || null,
     };
 
@@ -854,9 +1212,15 @@
           elbowRoom: 0,
           waitTime: 0,
           cueQuality: 0,
+          drinkSelection: null,
+          crowdVibe: null,
         };
 
         if (reviewCount > 0) {
+          // Track counts for nullable fields separately
+          let drinkSelectionCount = 0;
+          let crowdVibeCount = 0;
+
           barReviews.forEach(review => {
             ratings.tableQuality += review.table_quality;
             ratings.competitionLevel += review.competition;
@@ -864,12 +1228,28 @@
             ratings.elbowRoom += review.elbow_room;
             ratings.waitTime += review.wait_time;
             ratings.cueQuality += review.cue_quality;
+            if (review.drink_selection != null) {
+              ratings.drinkSelection = (ratings.drinkSelection || 0) + review.drink_selection;
+              drinkSelectionCount++;
+            }
+            if (review.crowd_vibe != null) {
+              ratings.crowdVibe = (ratings.crowdVibe || 0) + review.crowd_vibe;
+              crowdVibeCount++;
+            }
           });
 
-          // Calculate averages
-          Object.keys(ratings).forEach(key => {
+          // Calculate averages for required fields
+          ['tableQuality', 'competitionLevel', 'atmosphere', 'elbowRoom', 'waitTime', 'cueQuality'].forEach(key => {
             ratings[key] = Math.round((ratings[key] / reviewCount) * 10) / 10;
           });
+
+          // Calculate averages for nullable fields (only if any reviews have values)
+          if (drinkSelectionCount > 0) {
+            ratings.drinkSelection = Math.round((ratings.drinkSelection / drinkSelectionCount) * 10) / 10;
+          }
+          if (crowdVibeCount > 0) {
+            ratings.crowdVibe = Math.round((ratings.crowdVibe / crowdVibeCount) * 10) / 10;
+          }
         }
 
         return {
@@ -884,6 +1264,9 @@
           lng: bar.lng,
           tableBrand: bar.table_brand,
           hours: bar.hours,
+          placeId: bar.place_id,
+          hoursData: bar.hours_data,
+          hoursLastUpdated: bar.hours_last_updated,
           ratings: ratings,
           reviewCount: reviewCount,
           overallScore: overallScore(ratings),
@@ -923,6 +1306,127 @@
     initDetailClose();
     initRatingUI();
     initPopupLinks();
+    initSuggestBar();
+    initInfoSubmit();
+  }
+
+  function initSuggestBar() {
+    const btn = document.getElementById('suggest-bar-btn');
+    const overlay = document.getElementById('suggest-overlay');
+    const closeBtn = document.getElementById('suggest-close');
+    const form = document.getElementById('suggest-bar-form');
+
+    btn.addEventListener('click', () => overlay.classList.add('open'));
+    closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('suggest-name').value.trim();
+      const address = document.getElementById('suggest-address').value.trim();
+      const neighborhood = document.getElementById('suggest-neighborhood').value.trim();
+      const price = document.getElementById('suggest-price').value.trim();
+      const tables = document.getElementById('suggest-tables').value.trim();
+
+      if (!name || !address) return;
+
+      const suggestedData = JSON.stringify({ address, neighborhood: neighborhood || null, price: price || null, tables: tables || null });
+
+      try {
+        const { error } = await supabase.from('suggestions').insert([{
+          type: 'new_bar',
+          bar_name: name,
+          suggested_data: suggestedData,
+        }]);
+        if (error) {
+          console.error('Error submitting suggestion:', error);
+          alert('Error submitting. Please try again.');
+          return;
+        }
+        form.reset();
+        overlay.classList.remove('open');
+        alert('Thanks! We\'ll review and add it soon.');
+      } catch (err) {
+        console.error('Error:', err);
+        alert('Error submitting. Please try again.');
+      }
+    });
+  }
+
+  function initInfoSubmit() {
+    const overlay = document.getElementById('info-overlay');
+    const closeBtn = document.getElementById('info-close');
+    const form = document.getElementById('info-form');
+
+    closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+
+    // Open info modal via event delegation on .info-submit-link clicks
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('.info-submit-link');
+      if (!link) return;
+
+      const fieldType = link.dataset.infoType;
+      const barId = link.dataset.barId;
+      const barName = link.dataset.barName;
+
+      document.getElementById('info-bar-id').value = barId;
+      document.getElementById('info-bar-name').value = barName;
+      document.getElementById('info-field-type').value = fieldType;
+
+      if (fieldType === 'price') {
+        document.getElementById('info-title').textContent = 'Submit Price Info';
+        document.getElementById('info-subtitle').textContent = barName;
+        document.getElementById('info-label').textContent = 'Price (e.g. $2/game, Free)';
+        document.getElementById('info-value').type = 'text';
+        document.getElementById('info-value').placeholder = 'e.g. $2/game';
+      } else {
+        document.getElementById('info-title').textContent = 'Submit Table Count';
+        document.getElementById('info-subtitle').textContent = barName;
+        document.getElementById('info-label').textContent = 'Number of Tables';
+        document.getElementById('info-value').type = 'number';
+        document.getElementById('info-value').placeholder = 'e.g. 2';
+      }
+
+      document.getElementById('info-value').value = '';
+      overlay.classList.add('open');
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const barId = document.getElementById('info-bar-id').value;
+      const barName = document.getElementById('info-bar-name').value;
+      const fieldType = document.getElementById('info-field-type').value;
+      const value = document.getElementById('info-value').value.trim();
+
+      if (!value) return;
+
+      const suggestedData = JSON.stringify({ [fieldType]: value });
+
+      try {
+        const { error } = await supabase.from('suggestions').insert([{
+          type: 'bar_info',
+          bar_id: barId,
+          bar_name: barName,
+          suggested_data: suggestedData,
+        }]);
+        if (error) {
+          console.error('Error submitting info:', error);
+          alert('Error submitting. Please try again.');
+          return;
+        }
+        form.reset();
+        overlay.classList.remove('open');
+        alert('Thanks! We\'ll verify and update.');
+      } catch (err) {
+        console.error('Error:', err);
+        alert('Error submitting. Please try again.');
+      }
+    });
   }
 
   function initPopupLinks() {

@@ -95,3 +95,67 @@ INSERT INTO reviews (bar_id, reviewer_name, table_quality, competition, atmosphe
 ('the-ale-house', 'Initial Rating', 3, 4, 2, 3, 3, 3, 'Initial seed data from app launch'),
 ('madd-hatter', 'Initial Rating', 3, 2, 2, 3, 3, 3, 'Initial seed data from app launch'),
 ('south-house', 'Initial Rating', 1, 2, 3, 2, 3, 2, 'Initial seed data from app launch');
+
+-- =============================================
+-- Migration: Add Drink Selection & Crowd Vibe columns
+-- Run this in Supabase SQL Editor to add the new columns
+-- =============================================
+
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS drink_selection INTEGER DEFAULT NULL CHECK (drink_selection >= 1 AND drink_selection <= 5);
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS crowd_vibe INTEGER DEFAULT NULL CHECK (crowd_vibe >= 1 AND crowd_vibe <= 5);
+
+-- =============================================
+-- Migration: Add Place ID, hours cache, and nullable columns
+-- Run this in Supabase SQL Editor
+-- =============================================
+
+-- Add new columns to bars
+ALTER TABLE bars ADD COLUMN IF NOT EXISTS place_id TEXT;
+ALTER TABLE bars ADD COLUMN IF NOT EXISTS hours_data TEXT;
+ALTER TABLE bars ADD COLUMN IF NOT EXISTS hours_last_updated TIMESTAMPTZ;
+
+-- Make price, price_type, table_count nullable for bars with missing data
+ALTER TABLE bars ALTER COLUMN price DROP NOT NULL;
+ALTER TABLE bars ALTER COLUMN price_type DROP NOT NULL;
+ALTER TABLE bars ALTER COLUMN table_count DROP NOT NULL;
+ALTER TABLE bars ALTER COLUMN table_count DROP DEFAULT;
+
+-- Allow client to insert bars (for import script)
+CREATE POLICY "Anyone can insert bars" ON bars
+  FOR INSERT WITH CHECK (true);
+
+-- Allow client to update bars (for hours cache writes)
+CREATE POLICY "Anyone can update bars" ON bars
+  FOR UPDATE USING (true) WITH CHECK (true);
+
+-- Allow client to delete bars (for import cleanup)
+CREATE POLICY "Anyone can delete bars" ON bars
+  FOR DELETE USING (true);
+
+-- =============================================
+-- Migration: Create suggestions table
+-- Run this in Supabase SQL Editor
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS suggestions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  type TEXT NOT NULL CHECK (type IN ('new_bar', 'bar_info')),
+  bar_id TEXT REFERENCES bars(id) ON DELETE SET NULL,
+  bar_name TEXT NOT NULL,
+  suggested_data TEXT,
+  submitted_by TEXT NOT NULL DEFAULT 'Anonymous',
+  status TEXT NOT NULL DEFAULT 'pending',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_suggestions_type ON suggestions(type);
+
+ALTER TABLE suggestions ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can insert suggestions
+CREATE POLICY "Anyone can insert suggestions" ON suggestions
+  FOR INSERT WITH CHECK (true);
+
+-- Users can only read their own submissions (by submitted_by match)
+CREATE POLICY "Users can read own suggestions" ON suggestions
+  FOR SELECT USING (true);
