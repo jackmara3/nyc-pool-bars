@@ -1938,35 +1938,18 @@ body {
     height: 80px;
     padding: 0 1rem;
     flex-direction: row;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
   }
   .logo {
     margin: 0;
     margin-top: 10px;
-    margin-left: -40px;
   }
   .logo-img {
     height: 240px;
   }
   .header-user {
-    position: absolute;
-    right: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    gap: 0.4rem;
-  }
-  .header-user-name {
-    font-size: 0.8rem;
-  }
-  .header-user-avatar {
-    width: 32px;
-    height: 32px;
-    font-size: 0.85rem;
-  }
-  .header-online-dot {
-    width: 8px;
-    height: 8px;
+    display: none;
     bottom: 1px;
     right: 1px;
     border-width: 1.5px;
