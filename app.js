@@ -62,6 +62,7 @@
   let currentSort = 'rating';
   let currentFilter = 'all';
   let userLocation = null; // { lat, lng } from geolocation
+  let handlingPopState = false; // Flag to prevent pushState during popstate handling
 
   function overallScore(ratings) {
     const vals = RATING_KEYS.map((k) => ratings[k]).filter((n) => typeof n === 'number');
@@ -460,6 +461,10 @@
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
 
+    if (!handlingPopState) {
+      history.pushState({ view: 'detail', barId: bar.id }, '');
+    }
+
     // Trigger progress ring animation
     setTimeout(() => {
       const ring = document.querySelector('.progress-ring-fill');
@@ -525,7 +530,7 @@
     });
   }
 
-  function closeDetail() {
+  function closeDetail(fromPopState) {
     selectedId = null;
     document.getElementById('modal-overlay').classList.remove('open');
     document.body.style.overflow = '';
@@ -542,6 +547,10 @@
     document.getElementById('bar-list').querySelectorAll('.bar-list-item').forEach((el) => {
       el.classList.remove('active');
     });
+
+    if (!fromPopState) {
+      history.back();
+    }
   }
 
   function createPinIcon(highlight) {
@@ -954,7 +963,7 @@
   }
 
   function initDetailClose() {
-    document.getElementById('detail-close').addEventListener('click', closeDetail);
+    document.getElementById('detail-close').addEventListener('click', function() { closeDetail(); });
     document.getElementById('modal-overlay').addEventListener('click', (e) => {
       if (e.target.id === 'modal-overlay') closeDetail();
     });
@@ -1043,11 +1052,19 @@
     // Show rating UI
     document.getElementById('rating-ui').classList.add('open');
     document.body.style.overflow = 'hidden';
+
+    if (!handlingPopState) {
+      history.pushState({ view: 'rating', barId: bar.id }, '');
+    }
   }
 
-  function closeRatingUI() {
+  function closeRatingUI(fromPopState) {
     document.getElementById('rating-ui').classList.remove('open');
     document.body.style.overflow = '';
+
+    if (!fromPopState) {
+      history.back();
+    }
   }
 
   function handleBallClick(e) {
@@ -1137,8 +1154,10 @@
       }
 
       alert('Review submitted! Thank you for your feedback.');
-      closeRatingUI();
-      closeDetail();
+      closeRatingUI(true);
+      closeDetail(true);
+      // Go back past both rating and detail history entries
+      history.go(-2);
 
       // Refresh the data to show updated ratings
       await loadBarsFromSupabase();
@@ -1152,7 +1171,7 @@
 
   function initRatingUI() {
     // Back button
-    document.getElementById('rating-back').addEventListener('click', closeRatingUI);
+    document.getElementById('rating-back').addEventListener('click', function() { closeRatingUI(); });
 
     // Submit button - now calls submitReview
     document.getElementById('submit-review').addEventListener('click', submitReview);
@@ -1465,6 +1484,27 @@
       }
     });
   }
+
+  // Browser back button support
+  history.replaceState({ view: 'list' }, '');
+  window.addEventListener('popstate', function(e) {
+    var state = e.state || { view: 'list' };
+    handlingPopState = true;
+
+    var ratingOpen = document.getElementById('rating-ui').classList.contains('open');
+    var detailOpen = document.getElementById('modal-overlay').classList.contains('open');
+
+    if (state.view === 'detail' && ratingOpen) {
+      // Going back from rating UI to detail
+      closeRatingUI(true);
+    } else if (state.view === 'list') {
+      // Going back to the list
+      if (ratingOpen) closeRatingUI(true);
+      if (detailOpen) closeDetail(true);
+    }
+
+    handlingPopState = false;
+  });
 
   load();
 })();
