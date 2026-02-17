@@ -651,8 +651,9 @@
     const q = (query || '').trim().toLowerCase();
     let filtered = bars;
 
-    // Apply map bounds filter
-    if (map) {
+    // Apply map bounds filter (skip on mobile list view where map is hidden)
+    var isMobileList = window.innerWidth <= 768 && !document.body.classList.contains('mobile-map');
+    if (map && !isMobileList) {
       const bounds = map.getBounds();
       if (bounds) {
         filtered = filtered.filter((b) => bounds.contains({ lat: b.lat, lng: b.lng }));
@@ -1278,6 +1279,26 @@
     }
   }
 
+  function initMobileToggle() {
+    const toggle = document.getElementById('mobile-toggle');
+    if (!toggle) return;
+    const buttons = toggle.querySelectorAll('.mobile-toggle-btn');
+    buttons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        buttons.forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        var view = btn.getAttribute('data-view');
+        if (view === 'map') {
+          document.body.classList.add('mobile-map');
+          // Trigger resize so Google Maps renders correctly
+          if (map) google.maps.event.trigger(map, 'resize');
+        } else {
+          document.body.classList.remove('mobile-map');
+        }
+      });
+    });
+  }
+
   async function load() {
     // Try to load from Supabase first
     await loadBarsFromSupabase();
@@ -1308,6 +1329,7 @@
     initPopupLinks();
     initSuggestBar();
     initInfoSubmit();
+    initMobileToggle();
   }
 
   function initSuggestBar() {
