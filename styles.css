@@ -1935,19 +1935,19 @@ body {
 @media (max-width: 768px) {
   /* --- Header --- */
   .header {
-    height: auto;
-    padding: 0.5rem 1rem;
+    height: 80px;
+    padding: 0 1rem;
     flex-direction: row;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
   }
   .logo {
     margin: 0;
-    margin-top: 0;
-    margin-left: -30px;
+    margin-top: 10px;
+    margin-left: -40px;
   }
   .logo-img {
-    height: 120px;
+    height: 240px;
   }
   .header-user {
     position: absolute;
