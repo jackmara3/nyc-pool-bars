@@ -62,6 +62,7 @@
   let currentSort = 'rating';
   let currentFilter = 'all';
   let userLocation = null; // { lat, lng } from geolocation
+  let openNowFilter = false;
   let handlingPopState = false; // Flag to prevent pushState during popstate handling
 
   function overallScore(ratings) {
@@ -674,6 +675,11 @@
       filtered = filtered.filter((b) => b.neighborhood === currentFilter);
     }
 
+    // Apply Open Now filter
+    if (openNowFilter) {
+      filtered = filtered.filter((b) => b.hoursData && isOpenNow(b.hoursData) === true);
+    }
+
     // Apply search query
     if (q) {
       filtered = filtered.filter(
@@ -819,7 +825,24 @@
     // Update sidebar when map view changes
     map.addListener('idle', function() {
       var searchInput = document.getElementById('search');
-      updateList(filterBars(searchInput ? searchInput.value : ''));
+      var filtered = filterBars(searchInput ? searchInput.value : '');
+      updateList(filtered);
+
+      // Sync map markers when Open Now filter is active
+      if (openNowFilter && markerCluster) {
+        var filteredIds = new Set(filtered.map(function(b) { return b.id; }));
+        var toAdd = [];
+        var toRemove = [];
+        Object.keys(markers).forEach(function(id) {
+          if (filteredIds.has(id)) {
+            toAdd.push(markers[id]);
+          } else {
+            toRemove.push(markers[id]);
+          }
+        });
+        markerCluster.removeMarkers(toRemove);
+        markerCluster.addMarkers(toAdd);
+      }
     });
   }
 
@@ -958,6 +981,34 @@
     document.addEventListener('click', (e) => {
       if (!dropdown.contains(e.target)) {
         dropdown.classList.remove('open');
+      }
+    });
+  }
+
+  function initOpenNowToggle() {
+    var btn = document.getElementById('open-now-toggle');
+    btn.addEventListener('click', function() {
+      openNowFilter = !openNowFilter;
+      btn.classList.toggle('active', openNowFilter);
+
+      var searchInput = document.getElementById('search');
+      var filtered = filterBars(searchInput ? searchInput.value : '');
+      updateList(filtered);
+
+      // Update map markers to match
+      if (markerCluster) {
+        var filteredIds = new Set(filtered.map(function(b) { return b.id; }));
+        var toAdd = [];
+        var toRemove = [];
+        Object.keys(markers).forEach(function(id) {
+          if (filteredIds.has(id)) {
+            toAdd.push(markers[id]);
+          } else {
+            toRemove.push(markers[id]);
+          }
+        });
+        markerCluster.removeMarkers(toRemove);
+        markerCluster.addMarkers(toAdd);
       }
     });
   }
@@ -1343,6 +1394,7 @@
     initSearch();
     initSortDropdown();
     initFilterDropdown();
+    initOpenNowToggle();
     initDetailClose();
     initRatingUI();
     initPopupLinks();

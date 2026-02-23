@@ -335,6 +335,49 @@ body {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 2px;
 }
+/* ===== Open Now Toggle ===== */
+.open-now-wrap {
+  padding: 0 2rem 0.75rem;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.open-now-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.open-now-toggle:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.7);
+}
+.open-now-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: background 0.2s ease;
+}
+.open-now-toggle.active {
+  border-color: #22c55e;
+  color: #ffffff;
+  background: rgba(34, 197, 94, 0.1);
+}
+.open-now-toggle.active .open-now-dot {
+  background: #22c55e;
+}
+
 .search-wrap {
   padding: 0 2rem 1.5rem;
   background: transparent;
@@ -2069,6 +2112,9 @@ body {
   }
   .suggest-bar-btn {
     margin: 0 1rem 0.5rem;
+  }
+  .open-now-wrap {
+    padding: 0 1rem 0.5rem;
   }
 
   /* --- Bar list items: fix rating circle cutoff --- */
