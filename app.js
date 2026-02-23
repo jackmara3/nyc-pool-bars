@@ -1242,7 +1242,7 @@
     // Prepare review data for Supabase
     const reviewData = {
       bar_id: currentRatingBar.id,
-      reviewer_name: currentUser ? '@' + currentUser.username : 'Anonymous',
+      reviewer_name: currentUser ? currentUser.username : 'Anonymous',
       user_id: currentUser ? currentUser.id : null,
       username: currentUser ? currentUser.username : null,
       table_quality: userRatings.tableQuality,
@@ -1604,13 +1604,12 @@
       var initial = currentUser.username.charAt(0).toUpperCase();
       var userReviewCount = countUserReviews(currentUser.id);
       container.innerHTML =
-        '<span class="header-user-name">@' + escapeHtml(currentUser.username) + '</span>' +
         '<div class="header-user-avatar" id="header-avatar-btn" style="cursor:pointer;">' +
           escapeHtml(initial) +
           '<span class="header-online-dot"></span>' +
         '</div>' +
         '<div class="header-user-dropdown" id="header-user-dropdown">' +
-          '<div class="header-dropdown-name">@' + escapeHtml(currentUser.username) + '</div>' +
+          '<div class="header-dropdown-name">' + escapeHtml(currentUser.username) + '</div>' +
           '<div class="header-dropdown-reviews">' + userReviewCount + ' review' + (userReviewCount !== 1 ? 's' : '') + '</div>' +
           '<button class="header-dropdown-signout" id="header-sign-out">Sign Out</button>' +
         '</div>';
@@ -1626,7 +1625,7 @@
     if (currentUser) {
       var initial = currentUser.username.charAt(0).toUpperCase();
       container.innerHTML =
-        '<div class="user-info"><div class="user-name">@' + escapeHtml(currentUser.username) + '</div></div>' +
+        '<div class="user-info"><div class="user-name">' + escapeHtml(currentUser.username) + '</div></div>' +
         '<div class="user-avatar">' + escapeHtml(initial) + '<span class="online-dot"></span></div>';
     } else {
       container.innerHTML =
