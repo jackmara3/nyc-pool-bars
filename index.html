@@ -14,12 +14,8 @@
     <h1 class="logo">
       <img class="logo-img" src="finallogoupdate.png" alt="NYC Pool Bars" />
     </h1>
-    <div class="header-user">
-      <span class="header-user-name">@jack</span>
-      <div class="header-user-avatar">
-        J
-        <span class="header-online-dot"></span>
-      </div>
+    <div class="header-user" id="header-user">
+      <span class="header-sign-in" id="header-sign-in">Sign In</span>
     </div>
   </header>
 
@@ -99,15 +95,7 @@
           BACK TO LIST
         </button>
         <span class="rating-title">RATE THIS POOL BAR</span>
-        <div class="user-profile">
-          <div class="user-info">
-            <div class="user-name">@jack</div>
-          </div>
-          <div class="user-avatar">
-            J
-            <span class="online-dot"></span>
-          </div>
-        </div>
+        <div class="user-profile" id="rating-user-profile"></div>
       </header>
 
       <div class="establishment-card">
@@ -208,6 +196,32 @@
         <input type="text" class="suggest-input" id="info-value" required />
         <button type="submit" class="suggest-submit">Submit</button>
       </form>
+    </div>
+  </div>
+
+  <!-- Auth Modal -->
+  <div class="suggest-overlay" id="auth-overlay">
+    <div class="suggest-modal">
+      <button type="button" class="suggest-close" id="auth-close" aria-label="Close">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <h2 class="suggest-title" id="auth-title">Sign In</h2>
+      <p class="suggest-subtitle" id="auth-subtitle">Sign in to track your reviews.</p>
+      <form id="auth-form" class="suggest-form">
+        <div id="auth-username-field" style="display:none;">
+          <label class="suggest-label">Username <span class="suggest-required">*</span></label>
+          <input type="text" class="suggest-input" id="auth-username" placeholder="e.g. poolshark42" />
+        </div>
+        <label class="suggest-label">Email <span class="suggest-required">*</span></label>
+        <input type="email" class="suggest-input" id="auth-email" required placeholder="you@example.com" />
+        <label class="suggest-label">Password <span class="suggest-required">*</span></label>
+        <input type="password" class="suggest-input" id="auth-password" required placeholder="Min 6 characters" minlength="6" />
+        <p class="auth-error" id="auth-error" style="display:none;"></p>
+        <button type="submit" class="suggest-submit" id="auth-submit-btn">Sign In</button>
+      </form>
+      <p class="auth-toggle" id="auth-toggle">
+        Don't have an account? <span class="auth-toggle-link" id="auth-toggle-link">Sign Up</span>
+      </p>
     </div>
   </div>
 

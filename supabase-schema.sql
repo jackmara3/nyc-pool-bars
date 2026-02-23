@@ -159,3 +159,13 @@ CREATE POLICY "Anyone can insert suggestions" ON suggestions
 -- Users can only read their own submissions (by submitted_by match)
 CREATE POLICY "Users can read own suggestions" ON suggestions
   FOR SELECT USING (true);
+
+-- =============================================
+-- Migration: Add user authentication columns to reviews
+-- Run this in Supabase SQL Editor
+-- =============================================
+
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS user_id UUID DEFAULT NULL;
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS username TEXT DEFAULT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_reviews_user_id ON reviews(user_id);

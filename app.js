@@ -64,6 +64,8 @@
   let userLocation = null; // { lat, lng } from geolocation
   let openNowFilter = false;
   let handlingPopState = false; // Flag to prevent pushState during popstate handling
+  let currentUser = null; // { id, username, email } or null
+  let allReviewsRaw = []; // Raw review rows from Supabase
 
   function overallScore(ratings) {
     const vals = RATING_KEYS.map((k) => ratings[k]).filter((n) => typeof n === 'number');
@@ -443,6 +445,53 @@
     }
 
     if (reviewCount > 0) {
+      // View All Reviews expandable section
+      html += '<div class="all-reviews-section" id="all-reviews-section">';
+      html += '<div class="all-reviews-toggle" id="all-reviews-toggle">';
+      html += '<span class="all-reviews-toggle-text">View All Reviews (' + reviewCount + ')</span>';
+      html += '<span class="all-reviews-toggle-arrow">&#9660;</span>';
+      html += '</div>';
+      html += '<div class="all-reviews-list">';
+      var sortedReviews = (bar.reviews || []).slice().sort(function(a, b) {
+        return new Date(b.created_at) - new Date(a.created_at);
+      });
+      sortedReviews.forEach(function(review) {
+        var reviewUsername = review.username || review.reviewer_name || 'Anonymous';
+        var initial = reviewUsername.replace(/^@/, '').charAt(0).toUpperCase();
+        var date = new Date(review.created_at);
+        var dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        html += '<div class="review-card">';
+        html += '<div class="review-card-header">';
+        html += '<div class="review-card-user">';
+        html += '<div class="review-card-avatar">' + escapeHtml(initial) + '</div>';
+        html += '<span class="review-card-username">' + escapeHtml(reviewUsername) + '</span>';
+        html += '</div>';
+        html += '<span class="review-card-date">' + escapeHtml(dateStr) + '</span>';
+        html += '</div>';
+        html += '<div class="review-card-ratings">';
+        var ratingMap = {
+          tableQuality: review.table_quality,
+          competitionLevel: review.competition,
+          atmosphere: review.atmosphere,
+          elbowRoom: review.elbow_room,
+          waitTime: review.wait_time,
+          cueQuality: review.cue_quality,
+          drinkSelection: review.drink_selection,
+          crowdVibe: review.crowd_vibe,
+        };
+        RATING_KEYS.forEach(function(key) {
+          if (ratingMap[key] != null) {
+            html += '<span class="review-card-rating">' + escapeHtml(RATING_LABELS[key]) + ': <span class="review-card-rating-value">' + ratingMap[key] + '</span></span>';
+          }
+        });
+        html += '</div>';
+        if (review.notes) {
+          html += '<div class="review-card-notes">"' + escapeHtml(review.notes) + '"</div>';
+        }
+        html += '</div>';
+      });
+      html += '</div></div>';
+
       html += '<div class="modal-footer">';
       html += '<span class="modal-footer-text">Ratings updated in real-time • Community verified</span>';
       html += '</div>';
@@ -461,6 +510,15 @@
     content.innerHTML = renderDetail(bar);
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
+
+    // View All Reviews toggle
+    var reviewsToggle = content.querySelector('#all-reviews-toggle');
+    if (reviewsToggle) {
+      reviewsToggle.addEventListener('click', function() {
+        var section = document.getElementById('all-reviews-section');
+        if (section) section.classList.toggle('expanded');
+      });
+    }
 
     if (!handlingPopState) {
       history.pushState({ view: 'detail', barId: bar.id }, '');
@@ -1064,6 +1122,9 @@
     currentRatingBar = bar;
     userRatings = {};
 
+    // Update user profile in rating header
+    updateRatingUserUI();
+
     // Update establishment info
     document.getElementById('rating-bar-name').textContent = bar.name;
     document.getElementById('rating-address-text').textContent = bar.address;
@@ -1181,7 +1242,9 @@
     // Prepare review data for Supabase
     const reviewData = {
       bar_id: currentRatingBar.id,
-      reviewer_name: '@jack', // Could be made dynamic with auth
+      reviewer_name: currentUser ? '@' + currentUser.username : 'Anonymous',
+      user_id: currentUser ? currentUser.id : null,
+      username: currentUser ? currentUser.username : null,
       table_quality: userRatings.tableQuality,
       competition: userRatings.competitionLevel,
       atmosphere: userRatings.atmosphere,
@@ -1260,6 +1323,9 @@
         console.error('Error fetching reviews:', reviewsError);
         return;
       }
+
+      // Store raw reviews for individual review display and user count
+      allReviewsRaw = reviewsData || [];
 
       // Group reviews by bar_id and calculate averages
       const reviewsByBar = {};
@@ -1341,6 +1407,7 @@
           ratings: ratings,
           reviewCount: reviewCount,
           overallScore: overallScore(ratings),
+          reviews: barReviews,
         };
       });
 
@@ -1390,6 +1457,7 @@
     }
 
     updateList(sortBars(bars, currentSort));
+    initAuth();
     initMap();
     initSearch();
     initSortDropdown();
@@ -1518,6 +1586,185 @@
       } catch (err) {
         console.error('Error:', err);
         alert('Error submitting. Please try again.');
+      }
+    });
+  }
+
+  // ===== Authentication =====
+  function countUserReviews(userId) {
+    if (!userId) return 0;
+    return allReviewsRaw.filter(function(r) { return r.user_id === userId; }).length;
+  }
+
+  function updateHeaderAuthUI() {
+    var container = document.getElementById('header-user');
+    if (!container) return;
+
+    if (currentUser) {
+      var initial = currentUser.username.charAt(0).toUpperCase();
+      var userReviewCount = countUserReviews(currentUser.id);
+      container.innerHTML =
+        '<span class="header-user-name">@' + escapeHtml(currentUser.username) + '</span>' +
+        '<div class="header-user-avatar" id="header-avatar-btn" style="cursor:pointer;">' +
+          escapeHtml(initial) +
+          '<span class="header-online-dot"></span>' +
+        '</div>' +
+        '<div class="header-user-dropdown" id="header-user-dropdown">' +
+          '<div class="header-dropdown-name">@' + escapeHtml(currentUser.username) + '</div>' +
+          '<div class="header-dropdown-reviews">' + userReviewCount + ' review' + (userReviewCount !== 1 ? 's' : '') + '</div>' +
+          '<button class="header-dropdown-signout" id="header-sign-out">Sign Out</button>' +
+        '</div>';
+    } else {
+      container.innerHTML = '<span class="header-sign-in" id="header-sign-in">Sign In</span>';
+    }
+  }
+
+  function updateRatingUserUI() {
+    var container = document.getElementById('rating-user-profile');
+    if (!container) return;
+
+    if (currentUser) {
+      var initial = currentUser.username.charAt(0).toUpperCase();
+      container.innerHTML =
+        '<div class="user-info"><div class="user-name">@' + escapeHtml(currentUser.username) + '</div></div>' +
+        '<div class="user-avatar">' + escapeHtml(initial) + '<span class="online-dot"></span></div>';
+    } else {
+      container.innerHTML =
+        '<div class="user-info"><div class="user-name">Anonymous</div></div>' +
+        '<div class="user-avatar">?<span class="online-dot" style="display:none;"></span></div>';
+    }
+  }
+
+  function initAuth() {
+    var overlay = document.getElementById('auth-overlay');
+    var closeBtn = document.getElementById('auth-close');
+    var form = document.getElementById('auth-form');
+    var errorEl = document.getElementById('auth-error');
+    var isSignUp = false;
+
+    function setAuthMode(signUp) {
+      isSignUp = signUp;
+      document.getElementById('auth-title').textContent = signUp ? 'Sign Up' : 'Sign In';
+      document.getElementById('auth-subtitle').textContent = signUp
+        ? 'Create an account to track your reviews.'
+        : 'Sign in to track your reviews.';
+      document.getElementById('auth-submit-btn').textContent = signUp ? 'Sign Up' : 'Sign In';
+      document.getElementById('auth-username-field').style.display = signUp ? 'block' : 'none';
+      document.getElementById('auth-toggle').innerHTML = signUp
+        ? 'Already have an account? <span class="auth-toggle-link" id="auth-toggle-link">Sign In</span>'
+        : 'Don\'t have an account? <span class="auth-toggle-link" id="auth-toggle-link">Sign Up</span>';
+      document.getElementById('auth-toggle-link').addEventListener('click', function() { setAuthMode(!signUp); });
+      errorEl.style.display = 'none';
+    }
+
+    // Open auth modal from header "Sign In" link
+    document.addEventListener('click', function(e) {
+      if (e.target.id === 'header-sign-in' || e.target.closest('#header-sign-in')) {
+        setAuthMode(false);
+        form.reset();
+        overlay.classList.add('open');
+      }
+    });
+
+    // Close
+    closeBtn.addEventListener('click', function() { overlay.classList.remove('open'); });
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+
+    // Form submit
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      errorEl.style.display = 'none';
+      var email = document.getElementById('auth-email').value.trim();
+      var password = document.getElementById('auth-password').value;
+
+      try {
+        if (isSignUp) {
+          var username = document.getElementById('auth-username').value.trim();
+          if (!username) {
+            errorEl.textContent = 'Username is required.';
+            errorEl.style.display = 'block';
+            errorEl.style.color = '#b55a5a';
+            return;
+          }
+          var result = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: { data: { username: username } }
+          });
+          if (result.error) throw result.error;
+          if (result.data.user && !result.data.session) {
+            errorEl.textContent = 'Check your email to confirm your account.';
+            errorEl.style.display = 'block';
+            errorEl.style.color = '#5a8f5a';
+          } else {
+            form.reset();
+            overlay.classList.remove('open');
+          }
+        } else {
+          var signInResult = await supabase.auth.signInWithPassword({ email: email, password: password });
+          if (signInResult.error) throw signInResult.error;
+          form.reset();
+          overlay.classList.remove('open');
+        }
+      } catch (err) {
+        errorEl.textContent = err.message || 'An error occurred.';
+        errorEl.style.display = 'block';
+        errorEl.style.color = '#b55a5a';
+      }
+    });
+
+    // Listen for auth state changes
+    supabase.auth.onAuthStateChange(function(event, session) {
+      if (session && session.user) {
+        currentUser = {
+          id: session.user.id,
+          email: session.user.email,
+          username: session.user.user_metadata && session.user.user_metadata.username
+            ? session.user.user_metadata.username
+            : session.user.email.split('@')[0],
+        };
+      } else {
+        currentUser = null;
+      }
+      updateHeaderAuthUI();
+      updateRatingUserUI();
+    });
+
+    // Check initial session
+    supabase.auth.getUser().then(function(resp) {
+      if (resp.data && resp.data.user) {
+        var user = resp.data.user;
+        currentUser = {
+          id: user.id,
+          email: user.email,
+          username: user.user_metadata && user.user_metadata.username
+            ? user.user_metadata.username
+            : user.email.split('@')[0],
+        };
+      }
+      updateHeaderAuthUI();
+    });
+
+    // Header avatar dropdown toggle
+    document.addEventListener('click', function(e) {
+      var avatar = e.target.closest('#header-avatar-btn');
+      if (avatar) {
+        var dropdown = document.getElementById('header-user-dropdown');
+        if (dropdown) dropdown.classList.toggle('open');
+        return;
+      }
+      var dropdown = document.getElementById('header-user-dropdown');
+      if (dropdown && !e.target.closest('.header-user-dropdown')) {
+        dropdown.classList.remove('open');
+      }
+    });
+
+    // Sign out via event delegation
+    document.addEventListener('click', async function(e) {
+      if (e.target.closest('#header-sign-out')) {
+        await supabase.auth.signOut();
       }
     });
   }
