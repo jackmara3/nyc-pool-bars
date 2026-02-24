@@ -1469,7 +1469,6 @@
     initSuggestBar();
     initInfoSubmit();
     initMobileToggle();
-    initLeaderboard();
   }
 
   function initSuggestBar() {
@@ -1601,7 +1600,7 @@
     var container = document.getElementById('header-user');
     if (!container) return;
 
-    var lbLink = '<span class="header-leaderboard-link" id="header-leaderboard-link">Leaderboard</span>';
+    var lbLink = '<a class="header-leaderboard-link" href="/leaderboard/">Leaderboard</a>';
     if (currentUser) {
       var initial = currentUser.username.charAt(0).toUpperCase();
       var userReviewCount = countUserReviews(currentUser.id);
@@ -1799,113 +1798,6 @@
     });
   }
 
-  // ===== Leaderboard =====
-  function openLeaderboard() {
-    var ui = document.getElementById('leaderboard-ui');
-    var content = document.getElementById('leaderboard-content');
-    content.innerHTML = '<div style="text-align:center;padding:3rem;color:rgba(232,215,176,0.5);font-family:var(--font-display);font-style:italic;">Loading...</div>';
-    ui.classList.add('open');
-    document.body.style.overflow = 'hidden';
-
-    if (!handlingPopState) {
-      history.pushState({ view: 'leaderboard' }, '');
-    }
-
-    // Build leaderboard from allReviewsRaw
-    var userMap = {};
-    allReviewsRaw.forEach(function(r) {
-      if (!r.user_id) return;
-      if (!userMap[r.user_id]) {
-        userMap[r.user_id] = { userId: r.user_id, username: r.username || r.reviewer_name || 'Unknown', totalReviews: 0, bars: {} };
-      }
-      userMap[r.user_id].totalReviews++;
-      userMap[r.user_id].bars[r.bar_id] = true;
-    });
-
-    var users = Object.values(userMap).map(function(u) {
-      return { username: u.username, totalReviews: u.totalReviews, uniqueBars: Object.keys(u.bars).length };
-    });
-
-    // Sort by total reviews desc, then unique bars desc
-    users.sort(function(a, b) {
-      if (b.totalReviews !== a.totalReviews) return b.totalReviews - a.totalReviews;
-      return b.uniqueBars - a.uniqueBars;
-    });
-
-    if (users.length === 0) {
-      content.innerHTML =
-        '<div class="lb-empty">' +
-          '<div class="lb-empty-icon">🏆</div>' +
-          '<div class="lb-empty-text">Start reviewing bars to claim your spot on the leaderboard!</div>' +
-        '</div>';
-      return;
-    }
-
-    var html = '';
-
-    // Podium (top 3)
-    var top3 = users.slice(0, 3);
-    if (top3.length > 0) {
-      var trophies = ['🥇', '🥈', '🥉'];
-      var podiumClasses = ['lb-podium-first', 'lb-podium-second', 'lb-podium-third'];
-
-      html += '<div class="lb-podium">';
-      // Render order: #2, #1, #3 for visual layout
-      var order = top3.length >= 3 ? [1, 0, 2] : top3.length === 2 ? [1, 0] : [0];
-      order.forEach(function(idx) {
-        var u = top3[idx];
-        var initial = u.username.replace(/^@/, '').charAt(0).toUpperCase();
-        html += '<div class="lb-podium-item ' + podiumClasses[idx] + '">';
-        html += '<div class="lb-trophy">' + trophies[idx] + '</div>';
-        html += '<div class="lb-podium-avatar lb-avatar-' + (idx + 1) + '">' + escapeHtml(initial) + '</div>';
-        html += '<div class="lb-podium-name">' + escapeHtml(u.username) + '</div>';
-        html += '<div class="lb-podium-stats">' + u.totalReviews + ' review' + (u.totalReviews !== 1 ? 's' : '') + '</div>';
-        html += '<div class="lb-podium-stats">' + u.uniqueBars + ' bar' + (u.uniqueBars !== 1 ? 's' : '') + '</div>';
-        html += '</div>';
-      });
-      html += '</div>';
-    }
-
-    // Rest (#4+)
-    var rest = users.slice(3);
-    if (rest.length > 0) {
-      html += '<div class="lb-list">';
-      rest.forEach(function(u, i) {
-        var rank = i + 4;
-        var initial = u.username.replace(/^@/, '').charAt(0).toUpperCase();
-        html += '<div class="lb-list-row">';
-        html += '<span class="lb-list-rank">' + rank + '</span>';
-        html += '<div class="lb-list-avatar">' + escapeHtml(initial) + '</div>';
-        html += '<span class="lb-list-name">' + escapeHtml(u.username) + '</span>';
-        html += '<span class="lb-list-stat">' + u.totalReviews + ' review' + (u.totalReviews !== 1 ? 's' : '') + '</span>';
-        html += '<span class="lb-list-stat">' + u.uniqueBars + ' bar' + (u.uniqueBars !== 1 ? 's' : '') + '</span>';
-        html += '</div>';
-      });
-      html += '</div>';
-    }
-
-    content.innerHTML = html;
-  }
-
-  function closeLeaderboard(fromPopState) {
-    document.getElementById('leaderboard-ui').classList.remove('open');
-    document.body.style.overflow = '';
-    if (!fromPopState) {
-      history.back();
-    }
-  }
-
-  function initLeaderboard() {
-    document.getElementById('leaderboard-back').addEventListener('click', function() { closeLeaderboard(); });
-
-    // Open leaderboard via event delegation (header link is dynamic)
-    document.addEventListener('click', function(e) {
-      if (e.target.id === 'header-leaderboard-link' || e.target.closest('#header-leaderboard-link')) {
-        openLeaderboard();
-      }
-    });
-  }
-
   function initPopupLinks() {
     // Event delegation for "View Full Scorecard" links in popups
     document.addEventListener('click', (e) => {
@@ -1929,7 +1821,6 @@
 
     var ratingOpen = document.getElementById('rating-ui').classList.contains('open');
     var detailOpen = document.getElementById('modal-overlay').classList.contains('open');
-    var leaderboardOpen = document.getElementById('leaderboard-ui').classList.contains('open');
 
     if (state.view === 'detail' && ratingOpen) {
       // Going back from rating UI to detail
@@ -1937,7 +1828,6 @@
     } else if (state.view === 'list') {
       // Going back to the list
       if (ratingOpen) closeRatingUI(true);
-      if (leaderboardOpen) closeLeaderboard(true);
       if (detailOpen) closeDetail(true);
     }
 
