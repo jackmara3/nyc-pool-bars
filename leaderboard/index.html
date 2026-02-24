@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leaderboard — NYC Pool Bars</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== CSS Variables ===== */
+    :root {
+      --font-display: "Playfair Display", Georgia, serif;
+      --font-body: "Inter", system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", monospace;
+      --emerald-bg: #0a2216;
+      --emerald-deep: #071a10;
+      --emerald-card: #122d1e;
+      --gold: #d4af37;
+      --gold-dim: #b8962e;
+      --cream: #e8d7b0;
+      --cream-dim: #c5bba4;
+      --cream-faint: rgba(232, 215, 176, 0.35);
+      --card-bg: #f5f0e8;
+      --card-text: #1a2e22;
+      --card-muted: #5a6b5e;
+      --border-subtle: rgba(232, 215, 176, 0.12);
+      --border-gold: rgba(212, 175, 55, 0.25);
+    }
+
+    /* ===== Reset & Base ===== */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+    }
+    body {
+      font-family: var(--font-body);
+      font-weight: 400;
+      color: var(--cream);
+      background: var(--emerald-bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ===== Full-page container ===== */
+    .leaderboard-page {
+      min-height: 100vh;
+      background: var(--emerald-bg);
+      position: relative;
+    }
+    .leaderboard-page::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url("../new felt background.png");
+      background-repeat: repeat;
+      opacity: 0.02;
+      pointer-events: none;
+    }
+    .leaderboard-content {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem 4rem;
+    }
+
+    /* ===== Top Nav Bar ===== */
+    .lb-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2.5rem;
+    }
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: none;
+      border: none;
+      color: var(--gold);
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.3s ease;
+      text-decoration: none;
+    }
+    .back-btn:hover { opacity: 0.8; }
+    .back-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--gold);
+    }
+    .nav-label {
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--cream);
+      text-transform: uppercase;
+    }
+    .nav-profile {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .nav-profile-info {
+      text-align: right;
+    }
+    .nav-profile-label {
+      font-family: var(--font-body);
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--cream-dim);
+    }
+    .nav-profile-name {
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--cream);
+    }
+    .nav-avatar {
+      width: 36px;
+      height: 36px;
+      background: var(--emerald-card);
+      border: 2px solid var(--gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--gold);
+    }
+
+    /* ===== Hero ===== */
+    .lb-hero {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .lb-hero-title {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 0.75rem;
+      line-height: 1.1;
+    }
+    .lb-hero-subtitle {
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: var(--cream-faint);
+      max-width: 460px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    /* ===== Podium ===== */
+    .podium {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 3.5rem;
+      padding: 0 1rem;
+    }
+    .podium-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      max-width: 200px;
+    }
+
+    /* Trophy badges */
+    .podium-trophy {
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+      line-height: 1;
+    }
+    .podium-slot--1 .podium-trophy {
+      font-size: 2rem;
+    }
+
+    /* Avatar above card */
+    .podium-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: #1a3a2a;
+      border: 2.5px solid #3d6b3d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #e8d7b0;
+      margin-bottom: -26px;
+      position: relative;
+      z-index: 2;
+    }
+    .podium-slot--1 .podium-avatar {
+      width: 62px;
+      height: 62px;
+      font-size: 1.4rem;
+      margin-bottom: -31px;
+      border-color: #4d8b4d;
+    }
+
+    /* Card */
+    .podium-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 2.5rem 1.25rem 1.25rem;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    }
+    .podium-slot--1 .podium-card {
+      padding-top: 2.75rem;
+    }
+    .podium-name {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--card-text);
+      margin: 0.5rem 0 0.75rem;
+      line-height: 1.2;
+    }
+    .podium-slot--1 .podium-name {
+      font-size: 1.1rem;
+    }
+    .podium-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .podium-stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0.2rem 0;
+    }
+    .podium-stat-label {
+      font-family: var(--font-body);
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--card-muted);
+    }
+    .podium-stat-value {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--card-text);
+    }
+
+    /* Podium visual ordering: #2, #1, #3 */
+    .podium-slot--2 { order: 1; }
+    .podium-slot--1 { order: 2; }
+    .podium-slot--3 { order: 3; }
+
+    /* Height difference for podium effect */
+    .podium-slot--2,
+    .podium-slot--3 {
+      margin-bottom: 1rem;
+    }
+
+    /* ===== Section Divider ===== */
+    .section-divider {
+      height: 1px;
+      background: var(--border-subtle);
+      margin: 0 0 1.5rem;
+    }
+
+    /* ===== Top Reviewers Header ===== */
+    .reviewers-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding: 0 0.25rem;
+    }
+    .reviewers-header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .reviewers-header-icon {
+      font-size: 1rem;
+    }
+    .reviewers-header-title {
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--cream-dim);
+      text-transform: uppercase;
+    }
+    .reviewers-header-sort {
+      font-family: var(--font-body);
+      font-size: 0.65rem;
+      font-style: italic;
+      color: var(--cream-faint);
+    }
+
+    /* ===== Ranked List ===== */
+    .ranked-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 3rem;
+    }
+    .ranked-row {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.85rem 1rem;
+      background: rgba(18, 53, 36, 0.45);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      transition: border-color 0.2s ease;
+    }
+    .ranked-row:hover {
+      border-color: var(--border-gold);
+    }
+    .ranked-rank {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: rgba(232, 215, 176, 0.4);
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .ranked-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #1a3a2a;
+      border: 2px solid #3d6b3d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 600;
+      color: #e8d7b0;
+      flex-shrink: 0;
+    }
+    .ranked-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .ranked-name {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 600;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+    .ranked-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      margin-top: 0.15rem;
+    }
+    .ranked-badge-diamond {
+      width: 8px;
+      height: 8px;
+      border: 1.5px solid var(--gold-dim);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+    .ranked-badge-text {
+      font-family: var(--font-body);
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--cream-dim);
+    }
+    .ranked-stats {
+      display: flex;
+      gap: 1.25rem;
+      flex-shrink: 0;
+    }
+    .ranked-stat {
+      text-align: center;
+    }
+    .ranked-stat-label {
+      font-family: var(--font-body);
+      font-size: 0.55rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--cream-dim);
+      display: block;
+      margin-bottom: 0.1rem;
+    }
+    .ranked-stat-value {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--cream);
+    }
+
+    /* ===== Footer Note ===== */
+    .lb-footer {
+      text-align: center;
+      padding: 2rem 1rem 0;
+    }
+    .lb-footer-icon {
+      width: 36px;
+      height: 36px;
+      margin: 0 auto 0.75rem;
+      opacity: 0.3;
+    }
+    .lb-footer-icon svg {
+      width: 100%;
+      height: 100%;
+      stroke: var(--cream);
+    }
+    .lb-footer-text {
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      font-style: italic;
+      color: var(--cream-faint);
+      max-width: 320px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 640px) {
+      .leaderboard-content {
+        padding: 1.25rem 1rem 3rem;
+      }
+      .lb-nav {
+        margin-bottom: 1.75rem;
+      }
+      .nav-profile-info {
+        display: none;
+      }
+      .lb-hero-title {
+        font-size: 2.2rem;
+      }
+      .lb-hero-subtitle {
+        font-size: 0.8rem;
+      }
+      .lb-hero {
+        margin-bottom: 2rem;
+      }
+
+      /* Podium */
+      .podium {
+        gap: 0.5rem;
+        padding: 0;
+        margin-bottom: 2.5rem;
+      }
+      .podium-avatar {
+        width: 42px;
+        height: 42px;
+        font-size: 1rem;
+        margin-bottom: -21px;
+      }
+      .podium-slot--1 .podium-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 1.15rem;
+        margin-bottom: -25px;
+      }
+      .podium-card {
+        padding: 2rem 0.75rem 1rem;
+        border-radius: 10px;
+      }
+      .podium-slot--1 .podium-card {
+        padding-top: 2.25rem;
+      }
+      .podium-name {
+        font-size: 0.85rem;
+      }
+      .podium-slot--1 .podium-name {
+        font-size: 0.95rem;
+      }
+      .podium-stat-value {
+        font-size: 0.95rem;
+      }
+      .podium-stat-label {
+        font-size: 0.5rem;
+      }
+      .podium-trophy {
+        font-size: 1.3rem;
+      }
+      .podium-slot--1 .podium-trophy {
+        font-size: 1.6rem;
+      }
+
+      /* Ranked list */
+      .ranked-row {
+        padding: 0.7rem 0.75rem;
+        gap: 0.6rem;
+      }
+      .ranked-avatar {
+        width: 34px;
+        height: 34px;
+        font-size: 0.85rem;
+      }
+      .ranked-name {
+        font-size: 0.9rem;
+      }
+      .ranked-stats {
+        gap: 0.75rem;
+      }
+      .ranked-stat-value {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="leaderboard-page">
+    <div class="leaderboard-content">
+
+      <!-- Top Nav -->
+      <nav class="lb-nav">
+        <a href="/" class="back-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          BACK TO LIST
+        </a>
+        <span class="nav-label">LEADERBOARD</span>
+        <div class="nav-profile">
+          <div class="nav-profile-info">
+            <div class="nav-profile-label">Profile</div>
+            <div class="nav-profile-name">User #429</div>
+          </div>
+          <div class="nav-avatar">J</div>
+        </div>
+      </nav>
+
+      <!-- Hero -->
+      <section class="lb-hero">
+        <h1 class="lb-hero-title">The Leaderboard</h1>
+        <p class="lb-hero-subtitle">Celebrating the top contributors in the NYC pool bar community. Keep chalking those cues and sharing your thoughts.</p>
+      </section>
+
+      <!-- Podium (Top 3) -->
+      <section class="podium">
+
+        <!-- #1 — Center -->
+        <div class="podium-slot podium-slot--1">
+          <div class="podium-trophy">&#x1f3c6;</div>
+          <div class="podium-avatar">A</div>
+          <div class="podium-card">
+            <div class="podium-name">Alex Rivera</div>
+            <div class="podium-stats">
+              <div class="podium-stat-row">
+                <span class="podium-stat-label">Reviews</span>
+                <span class="podium-stat-value">42</span>
+              </div>
+              <div class="podium-stat-row">
+                <span class="podium-stat-label">Bars</span>
+                <span class="podium-stat-value">18</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- #2 — Left -->
+        <div class="podium-slot podium-slot--2">
+          <div class="podium-trophy">&#x1f948;</div>
+          <div class="podium-avatar">J</div>
+          <div class="podium-card">
+            <div class="podium-name">Jordan Hayes</div>
+            <div class="podium-stats">
+              <div class="podium-stat-row">
+                <span class="podium-stat-label">Reviews</span>
+                <span class="podium-stat-value">38</span>
+              </div>
+              <div class="podium-stat-row">
+                <span class="podium-stat-label">Bars</span>
+                <span class="podium-stat-value">15</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- #3 — Right -->
+        <div class="podium-slot podium-slot--3">
+          <div class="podium-trophy">&#x1f949;</div>
+          <div class="podium-avatar">S</div>
+          <div class="podium-card">
+            <div class="podium-name">Sam Taylor</div>
+            <div class="podium-stats">
+              <div class="podium-stat-row">
+                <span class="podium-stat-label">Reviews</span>
+                <span class="podium-stat-value">35</span>
+              </div>
+              <div class="podium-stat-row">
+                <span class="podium-stat-label">Bars</span>
+                <span class="podium-stat-value">12</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Section Divider -->
+      <div class="section-divider"></div>
+
+      <!-- Top Reviewers Header -->
+      <div class="reviewers-header">
+        <div class="reviewers-header-left">
+          <span class="reviewers-header-icon">&#x1f3b1;</span>
+          <span class="reviewers-header-title">Top Reviewers</span>
+        </div>
+        <span class="reviewers-header-sort">Ranked by Total Reviews</span>
+      </div>
+
+      <!-- Ranked List (#4+) -->
+      <div class="ranked-list">
+
+        <div class="ranked-row">
+          <span class="ranked-rank">4</span>
+          <div class="ranked-avatar">C</div>
+          <div class="ranked-info">
+            <div class="ranked-name">Casey Morgan</div>
+            <div class="ranked-badge">
+              <div class="ranked-badge-diamond"></div>
+              <span class="ranked-badge-text">NYC Reviewer</span>
+            </div>
+          </div>
+          <div class="ranked-stats">
+            <div class="ranked-stat">
+              <span class="ranked-stat-label">Reviews</span>
+              <span class="ranked-stat-value">29</span>
+            </div>
+            <div class="ranked-stat">
+              <span class="ranked-stat-label">Bars</span>
+              <span class="ranked-stat-value">11</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ranked-row">
+          <span class="ranked-rank">5</span>
+          <div class="ranked-avatar">T</div>
+          <div class="ranked-info">
+            <div class="ranked-name">Taylor Quinn</div>
+            <div class="ranked-badge">
+              <div class="ranked-badge-diamond"></div>
+              <span class="ranked-badge-text">NYC Reviewer</span>
+            </div>
+          </div>
+          <div class="ranked-stats">
+            <div class="ranked-stat">
+              <span class="ranked-stat-label">Reviews</span>
+              <span class="ranked-stat-value">24</span>
+            </div>
+            <div class="ranked-stat">
+              <span class="ranked-stat-label">Bars</span>
+              <span class="ranked-stat-value">9</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ranked-row">
+          <span class="ranked-rank">6</span>
+          <div class="ranked-avatar">J</div>
+          <div class="ranked-info">
+            <div class="ranked-name">Jamie Lane</div>
+            <div class="ranked-badge">
+              <div class="ranked-badge-diamond"></div>
+              <span class="ranked-badge-text">NYC Reviewer</span>
+            </div>
+          </div>
+          <div class="ranked-stats">
+            <div class="ranked-stat">
+              <span class="ranked-stat-label">Reviews</span>
+              <span class="ranked-stat-value">18</span>
+            </div>
+            <div class="ranked-stat">
+              <span class="ranked-stat-label">Bars</span>
+              <span class="ranked-stat-value">8</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ranked-row">
+          <span class="ranked-rank">7</span>
+          <div class="ranked-avatar">R</div>
+          <div class="ranked-info">
+            <div class="ranked-name">Riley Woods</div>
+            <div class="ranked-badge">
+              <div class="ranked-badge-diamond"></div>
+              <span class="ranked-badge-text">NYC Reviewer</span>
+            </div>
+          </div>
+          <div class="ranked-stats">
+            <div class="ranked-stat">
+              <span class="ranked-stat-label">Reviews</span>
+              <span class="ranked-stat-value">15</span>
+            </div>
+            <div class="ranked-stat">
+              <span class="ranked-stat-label">Bars</span>
+              <span class="ranked-stat-value">6</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ranked-row">
+          <span class="ranked-rank">8</span>
+          <div class="ranked-avatar">M</div>
+          <div class="ranked-info">
+            <div class="ranked-name">Morgan Lee</div>
+            <div class="ranked-badge">
+              <div class="ranked-badge-diamond"></div>
+              <span class="ranked-badge-text">NYC Reviewer</span>
+            </div>
+          </div>
+          <div class="ranked-stats">
+            <div class="ranked-stat">
+              <span class="ranked-stat-label">Reviews</span>
+              <span class="ranked-stat-value">12</span>
+            </div>
+            <div class="ranked-stat">
+              <span class="ranked-stat-label">Bars</span>
+              <span class="ranked-stat-value">5</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Note -->
+      <footer class="lb-footer">
+        <div class="lb-footer-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M16 4h2a2 2 0 0 1 2 2v2"/>
+            <path d="M20 16v2a2 2 0 0 1-2 2h-2"/>
+            <path d="M8 20H6a2 2 0 0 1-2-2v-2"/>
+            <path d="M4 8V6a2 2 0 0 1 2-2h2"/>
+            <path d="M12 8v4l2 2"/>
+            <circle cx="12" cy="12" r="4"/>
+          </svg>
+        </div>
+        <p class="lb-footer-text">New rankings are calculated every Monday at midnight EST based on community activity.</p>
+      </footer>
+
+    </div>
+  </div>
+
+</body>
+</html>

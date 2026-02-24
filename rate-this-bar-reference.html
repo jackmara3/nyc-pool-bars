@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rate This Bar — Style Reference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== CSS Variables ===== */
+    :root {
+      --bg-deep: #0d0c0b;
+      --bg-card: #151312;
+      --bg-elevated: #1c1a18;
+      --bg-hover: #242220;
+      --border: #2d2a27;
+      --border-focus: #4a4540;
+      --text: #e8e4e0;
+      --text-muted: #9a958e;
+      --text-dim: #6b665f;
+      --accent: #c9a962;
+      --accent-dim: #8b7342;
+      --accent-glow: rgba(201, 169, 98, 0.25);
+      --green: #5a8f5a;
+      --green-dim: #3d6b3d;
+      --red: #b55a5a;
+      --radius: 8px;
+      --radius-sm: 6px;
+      --font-display: "Playfair Display", Georgia, serif;
+      --font-body: "Inter", system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", monospace;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+      --sidebar-width: 450px;
+      --gold-accent: #e8cfa0;
+      --emerald-dark: #122d26;
+      --emerald-mid: #193830;
+      --felt-border: #1e3a22;
+      --felt-overlay: rgba(0, 0, 0, 0.22);
+    }
+
+    /* ===== Reset & Base ===== */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    body {
+      font-family: var(--font-body);
+      font-weight: 400;
+      color: var(--text);
+      background: var(--bg-deep);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ===== Rating UI Container ===== */
+    .rating-ui {
+      position: fixed;
+      inset: 0;
+      background: #0a2216;
+      z-index: 2000;
+      overflow-y: auto;
+      opacity: 1;
+      visibility: visible;
+    }
+    .rating-ui::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url("new felt background.png");
+      background-repeat: repeat;
+      opacity: 0.02;
+      pointer-events: none;
+    }
+    .rating-ui-content {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem 3rem;
+    }
+
+    /* ===== Rating Header ===== */
+    .rating-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: none;
+      border: none;
+      color: #d4af37;
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.3s ease;
+    }
+    .back-btn:hover {
+      opacity: 0.8;
+    }
+    .back-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: #d4af37;
+    }
+    .rating-title {
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: #e8d7b0;
+      text-transform: uppercase;
+    }
+
+    /* ===== User Profile ===== */
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      position: relative;
+    }
+    .user-avatar {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      background: #1a3a2a;
+      border: 2px solid #d4af37;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      color: #d4af37;
+    }
+    .user-avatar .online-dot {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 10px;
+      height: 10px;
+      background: #22c55e;
+      border: 2px solid #0a2216;
+      border-radius: 50%;
+    }
+    .user-info {
+      text-align: right;
+    }
+    .user-name {
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      color: #d4af37;
+      font-weight: 600;
+    }
+    .user-level {
+      font-family: var(--font-display);
+      font-size: 0.6rem;
+      color: #c5bba4;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .header-sign-in {
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #d4af37;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+    .header-sign-in:hover {
+      color: #e8d7b0;
+      text-decoration: underline;
+    }
+    .rating-sign-in {
+      font-size: 0.9rem;
+    }
+    .rating-user-dropdown {
+      top: calc(100% + 8px);
+      right: 0;
+    }
+
+    /* ===== Establishment Card ===== */
+    .establishment-card {
+      background: #0a2216;
+      border: 1px solid rgba(232, 215, 176, 0.2);
+      border-radius: 12px;
+      padding: 1.5rem 2rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+    .establishment-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: url("new felt background.png");
+      background-repeat: repeat;
+      opacity: 0.03;
+      pointer-events: none;
+      border-radius: 12px;
+    }
+    .establishment-name {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 0 0 0.5rem;
+      position: relative;
+      z-index: 1;
+    }
+    .establishment-address {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      color: #e8d7b0;
+      position: relative;
+      z-index: 1;
+    }
+    .establishment-address svg {
+      width: 14px;
+      height: 14px;
+      stroke: #d4af37;
+    }
+
+    /* ===== Rating Section Header ===== */
+    .rating-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .rating-section-title {
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: #c5bba4;
+      text-transform: uppercase;
+    }
+    .rating-progress {
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      color: #d4af37;
+    }
+    .rating-progress .completed {
+      color: #d4af37;
+    }
+
+    /* ===== Rating Grid ===== */
+    .rating-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.6rem;
+      margin-bottom: 1.25rem;
+    }
+
+    /* ===== Rating Card ===== */
+    .rating-card {
+      background: rgba(18, 53, 36, 0.5);
+      border: 1px solid rgba(232, 215, 176, 0.12);
+      border-radius: 10px;
+      padding: 0.7rem 1rem;
+      transition: border-color 0.3s ease;
+    }
+    .rating-card:hover {
+      border-color: rgba(212, 175, 55, 0.3);
+    }
+    .rating-card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      margin-bottom: 0.45rem;
+    }
+    .rating-card-icon {
+      width: 30px;
+      height: 30px;
+      background: #0a2216;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .rating-card-icon svg {
+      width: 15px;
+      height: 15px;
+      stroke: rgba(232, 215, 176, 0.6);
+    }
+    .rating-card-info {
+      flex: 1;
+    }
+    .rating-card-title {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 0 0 0.1rem;
+    }
+    .rating-card-subtitle {
+      font-family: var(--font-display);
+      font-size: 0.6rem;
+      color: #c5bba4;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0;
+    }
+    .rating-card-value {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      color: rgba(232, 215, 176, 0.5);
+      margin-left: auto;
+    }
+    .rating-card-value.has-value {
+      color: #d4af37;
+    }
+
+    /* ===== Pool Ball Selector ===== */
+    .pool-ball-selector {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.35rem;
+      position: relative;
+    }
+    .pool-ball-selector::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 20px;
+      right: 20px;
+      height: 2px;
+      background: rgba(232, 215, 176, 0.2);
+      transform: translateY(-50%);
+      z-index: 0;
+    }
+    .pool-ball-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      z-index: 1;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      padding: 0;
+      filter: grayscale(100%) opacity(0.5);
+    }
+    .pool-ball-btn svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .pool-ball-btn:hover {
+      filter: grayscale(50%) opacity(0.75);
+      transform: scale(1.08);
+    }
+    .pool-ball-btn.active {
+      filter: grayscale(0%) opacity(1);
+    }
+    .pool-ball-btn.selected {
+      filter: grayscale(0%) opacity(1);
+      transform: scale(1.12);
+      box-shadow: 0 0 16px rgba(255, 255, 255, 0.35), 0 0 24px rgba(212, 175, 55, 0.3);
+    }
+
+    /* ===== Rating Labels ===== */
+    .rating-labels {
+      display: flex;
+      justify-content: space-between;
+    }
+    .rating-label {
+      font-family: var(--font-display);
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: #c5bba4;
+      text-transform: uppercase;
+    }
+
+    /* ===== Notes Card ===== */
+    .notes-card {
+      background: rgba(18, 53, 36, 0.5);
+      border: 1px solid rgba(232, 215, 176, 0.12);
+      border-radius: 12px;
+      padding: 0.85rem 1.25rem;
+      margin-bottom: 1.25rem;
+      max-width: 580px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .notes-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.6rem;
+    }
+    .notes-icon {
+      width: 36px;
+      height: 36px;
+      background: #0a2216;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .notes-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: rgba(232, 215, 176, 0.6);
+    }
+    .notes-info {
+      flex: 1;
+    }
+    .notes-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 0 0 0.15rem;
+    }
+    .notes-subtitle {
+      font-family: var(--font-display);
+      font-size: 0.65rem;
+      color: #c5bba4;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0;
+    }
+    .notes-textarea {
+      width: 100%;
+      min-height: 65px;
+      background: rgba(10, 34, 22, 0.5);
+      border: 1px solid rgba(232, 215, 176, 0.1);
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      color: #e8d7b0;
+      resize: vertical;
+      transition: border-color 0.3s ease;
+    }
+    .notes-textarea::placeholder {
+      color: rgba(232, 215, 176, 0.4);
+      font-style: italic;
+    }
+    .notes-textarea:focus {
+      outline: none;
+      border-color: rgba(212, 175, 55, 0.5);
+    }
+
+    /* ===== Overall + Submit Row ===== */
+    .overall-submit-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 1rem;
+    }
+    .overall-experience {
+      text-align: center;
+    }
+    .overall-experience-label {
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: #c5bba4;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .overall-experience-value {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: rgba(232, 215, 176, 0.4);
+    }
+    .overall-experience-value.has-value {
+      color: #e8d7b0;
+    }
+    .overall-experience-value span {
+      font-size: 1.5rem;
+      color: rgba(232, 215, 176, 0.4);
+    }
+
+    /* ===== Submit Section ===== */
+    .submit-section {
+      text-align: center;
+    }
+    .submit-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem 3rem;
+      background: #b8a44c;
+      border: none;
+      border-radius: 50px;
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: #0a2216;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .submit-btn.enabled {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .submit-btn.enabled:hover {
+      background: #c9b45c;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .submit-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: #0a2216;
+      display: inline-block;
+    }
+    .submit-disclaimer {
+      font-family: var(--font-display);
+      font-size: 0.65rem;
+      font-style: italic;
+      color: rgba(232, 215, 176, 0.35);
+      max-width: 400px;
+      margin: 1rem auto 0;
+      line-height: 1.5;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 768px) {
+      .rating-grid {
+        grid-template-columns: 1fr;
+      }
+      .rating-header {
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+      .rating-title {
+        order: -1;
+        width: 100%;
+        text-align: center;
+      }
+      .notes-card {
+        max-width: 100%;
+        padding: 0.85rem 1rem;
+        margin-bottom: 1.5rem;
+        box-sizing: border-box;
+      }
+      .notes-textarea {
+        min-height: 80px;
+        font-size: 0.8rem;
+        box-sizing: border-box;
+      }
+      .overall-submit-row {
+        flex-direction: column;
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+      }
+      .submit-btn {
+        padding: 1rem 2rem;
+      }
+      .submit-section {
+        margin-bottom: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Rating UI -->
+  <div class="rating-ui">
+    <div class="rating-ui-content">
+      <header class="rating-header">
+        <button class="back-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          BACK TO LIST
+        </button>
+        <span class="rating-title">RATE THIS POOL BAR</span>
+        <div class="user-profile">
+          <div class="user-avatar" style="cursor:pointer;">J</div>
+        </div>
+      </header>
+
+      <div class="establishment-card">
+        <h1 class="establishment-name">Amsterdam Billiard Club</h1>
+        <div class="establishment-address">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5-8 12-8 12s-8-7-8-12a8 8 0 0 1 8-8z"/></svg>
+          <span>344 Amsterdam Ave, New York, NY 10024</span>
+          <span>&bull;</span>
+          <span>UPPER WEST SIDE</span>
+        </div>
+      </div>
+
+      <div class="rating-section-header">
+        <span class="rating-section-title">RATE EACH CATEGORY</span>
+        <span class="rating-progress"><span class="completed">3</span> / 8 Completed</span>
+      </div>
+
+      <div class="rating-grid">
+
+        <!-- Card 1: Atmosphere (with a selection made) -->
+        <div class="rating-card">
+          <div class="rating-card-header">
+            <div class="rating-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"></path></svg>
+            </div>
+            <div class="rating-card-info">
+              <h3 class="rating-card-title">Atmosphere</h3>
+              <p class="rating-card-subtitle">LIGHTING, MUSIC, VIBE</p>
+            </div>
+            <span class="rating-card-value has-value">4</span>
+          </div>
+          <div class="pool-ball-selector">
+            <button class="pool-ball-btn active">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b1-atm" cx="30%" cy="30%"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b1-atm)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">1</text></svg>
+            </button>
+            <button class="pool-ball-btn active">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b2-atm" cx="30%" cy="30%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1d4ed8"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b2-atm)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">2</text></svg>
+            </button>
+            <button class="pool-ball-btn active">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b3-atm" cx="30%" cy="30%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b3-atm)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">3</text></svg>
+            </button>
+            <button class="pool-ball-btn selected">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b4-atm" cx="30%" cy="30%"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#7e22ce"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b4-atm)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">4</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b5-atm" cx="30%" cy="30%"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#c2410c"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b5-atm)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">5</text></svg>
+            </button>
+          </div>
+          <div class="rating-labels">
+            <span class="rating-label">BEAT</span>
+            <span class="rating-label">ELECTRIC</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Crowd Vibe (with selection) -->
+        <div class="rating-card">
+          <div class="rating-card-header">
+            <div class="rating-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 5.5c-4.2 0-7 2.6-7 6s2.8 6 7 6h2.2L18 20v-2.6c1.8-1 3-2.9 3-5.9 0-3.4-2.8-6-7-6h-2z"/></svg>
+            </div>
+            <div class="rating-card-info">
+              <h3 class="rating-card-title">Crowd Vibe</h3>
+              <p class="rating-card-subtitle">FRIENDLINESS, CONVERSATION</p>
+            </div>
+            <span class="rating-card-value has-value">5</span>
+          </div>
+          <div class="pool-ball-selector">
+            <button class="pool-ball-btn active">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b1-cv" cx="30%" cy="30%"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b1-cv)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">1</text></svg>
+            </button>
+            <button class="pool-ball-btn active">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b2-cv" cx="30%" cy="30%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1d4ed8"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b2-cv)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">2</text></svg>
+            </button>
+            <button class="pool-ball-btn active">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b3-cv" cx="30%" cy="30%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b3-cv)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">3</text></svg>
+            </button>
+            <button class="pool-ball-btn active">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b4-cv" cx="30%" cy="30%"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#7e22ce"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b4-cv)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">4</text></svg>
+            </button>
+            <button class="pool-ball-btn selected">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b5-cv" cx="30%" cy="30%"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#c2410c"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b5-cv)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">5</text></svg>
+            </button>
+          </div>
+          <div class="rating-labels">
+            <span class="rating-label">RESERVED</span>
+            <span class="rating-label">WELCOMING</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Drink Selection (no selection) -->
+        <div class="rating-card">
+          <div class="rating-card-header">
+            <div class="rating-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5.5 9h10v8.7a2.3 2.3 0 0 1-2.3 2.3H7.8a2.3 2.3 0 0 1-2.3-2.3V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15.5 10.2h1.6a3 3 0 0 1 0 6h-1.6"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5.5 9c.6-1.4 2-1.8 3-.9 1-.9 2.1-.9 3.1 0 1.1-.9 2.4-.5 2.9.9"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.3 12.2v5.6M11 12.2v5.6M13.7 12.2v5.6"/></svg>
+            </div>
+            <div class="rating-card-info">
+              <h3 class="rating-card-title">Drink Selection</h3>
+              <p class="rating-card-subtitle">VARIETY, PRICING, QUALITY</p>
+            </div>
+            <span class="rating-card-value">--</span>
+          </div>
+          <div class="pool-ball-selector">
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b1-ds" cx="30%" cy="30%"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b1-ds)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">1</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b2-ds" cx="30%" cy="30%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1d4ed8"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b2-ds)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">2</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b3-ds" cx="30%" cy="30%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b3-ds)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">3</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b4-ds" cx="30%" cy="30%"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#7e22ce"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b4-ds)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">4</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b5-ds" cx="30%" cy="30%"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#c2410c"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b5-ds)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">5</text></svg>
+            </button>
+          </div>
+          <div class="rating-labels">
+            <span class="rating-label">BASIC</span>
+            <span class="rating-label">ELITE</span>
+          </div>
+        </div>
+
+        <!-- Card 4: Table Quality (with selection) -->
+        <div class="rating-card">
+          <div class="rating-card-header">
+            <div class="rating-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><rect x="4" y="7" width="16" height="10" rx="1.5" stroke-linecap="round" stroke-linejoin="round"></rect><circle cx="5" cy="8" r="0.9" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle><circle cx="19" cy="8" r="0.9" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle><circle cx="5" cy="16" r="0.9" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle><circle cx="19" cy="16" r="0.9" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle><circle cx="12" cy="7.5" r="0.8" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle><circle cx="12" cy="16.5" r="0.8" fill="rgba(232, 215, 176, 0.6)" stroke="none"></circle></svg>
+            </div>
+            <div class="rating-card-info">
+              <h3 class="rating-card-title">Table Quality</h3>
+              <p class="rating-card-subtitle">CLOTH CONDITION, LEVELNESS, RAILS</p>
+            </div>
+            <span class="rating-card-value has-value">3</span>
+          </div>
+          <div class="pool-ball-selector">
+            <button class="pool-ball-btn active">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b1-tq" cx="30%" cy="30%"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b1-tq)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">1</text></svg>
+            </button>
+            <button class="pool-ball-btn active">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b2-tq" cx="30%" cy="30%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1d4ed8"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b2-tq)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">2</text></svg>
+            </button>
+            <button class="pool-ball-btn selected">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b3-tq" cx="30%" cy="30%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b3-tq)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">3</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b4-tq" cx="30%" cy="30%"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#7e22ce"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b4-tq)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">4</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b5-tq" cx="30%" cy="30%"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#c2410c"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b5-tq)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">5</text></svg>
+            </button>
+          </div>
+          <div class="rating-labels">
+            <span class="rating-label">ROUGH</span>
+            <span class="rating-label">PRISTINE</span>
+          </div>
+        </div>
+
+        <!-- Card 5: Cue Quality (no selection) -->
+        <div class="rating-card">
+          <div class="rating-card-header">
+            <div class="rating-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><line x1="4" y1="20" x2="20" y2="4" stroke-width="2.2" stroke-linecap="round"></line><line x1="4" y1="20" x2="7" y2="17" stroke-width="3" stroke-linecap="round"></line></svg>
+            </div>
+            <div class="rating-card-info">
+              <h3 class="rating-card-title">Cue Quality</h3>
+              <p class="rating-card-subtitle">STICK CONDITION, CHALK, TIPS</p>
+            </div>
+            <span class="rating-card-value">--</span>
+          </div>
+          <div class="pool-ball-selector">
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b1-cq" cx="30%" cy="30%"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b1-cq)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">1</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b2-cq" cx="30%" cy="30%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1d4ed8"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b2-cq)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">2</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b3-cq" cx="30%" cy="30%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b3-cq)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">3</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b4-cq" cx="30%" cy="30%"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#7e22ce"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b4-cq)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">4</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b5-cq" cx="30%" cy="30%"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#c2410c"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b5-cq)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">5</text></svg>
+            </button>
+          </div>
+          <div class="rating-labels">
+            <span class="rating-label">ROUGH</span>
+            <span class="rating-label">PRO GRADE</span>
+          </div>
+        </div>
+
+        <!-- Card 6: Elbow Room (no selection) -->
+        <div class="rating-card">
+          <div class="rating-card-header">
+            <div class="rating-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"></path></svg>
+            </div>
+            <div class="rating-card-info">
+              <h3 class="rating-card-title">Elbow Room</h3>
+              <p class="rating-card-subtitle">SPACE AROUND TABLES, CROWDING</p>
+            </div>
+            <span class="rating-card-value">--</span>
+          </div>
+          <div class="pool-ball-selector">
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b1-er" cx="30%" cy="30%"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b1-er)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">1</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b2-er" cx="30%" cy="30%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1d4ed8"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b2-er)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">2</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b3-er" cx="30%" cy="30%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b3-er)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">3</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b4-er" cx="30%" cy="30%"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#7e22ce"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b4-er)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">4</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b5-er" cx="30%" cy="30%"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#c2410c"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b5-er)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">5</text></svg>
+            </button>
+          </div>
+          <div class="rating-labels">
+            <span class="rating-label">TIGHT</span>
+            <span class="rating-label">SPACIOUS</span>
+          </div>
+        </div>
+
+        <!-- Card 7: Competition (no selection) -->
+        <div class="rating-card">
+          <div class="rating-card-header">
+            <div class="rating-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>
+            </div>
+            <div class="rating-card-info">
+              <h3 class="rating-card-title">Competition</h3>
+              <p class="rating-card-subtitle">PLAYER SKILL LEVEL</p>
+            </div>
+            <span class="rating-card-value">--</span>
+          </div>
+          <div class="pool-ball-selector">
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b1-co" cx="30%" cy="30%"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b1-co)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">1</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b2-co" cx="30%" cy="30%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1d4ed8"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b2-co)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">2</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b3-co" cx="30%" cy="30%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b3-co)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">3</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b4-co" cx="30%" cy="30%"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#7e22ce"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b4-co)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">4</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b5-co" cx="30%" cy="30%"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#c2410c"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b5-co)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">5</text></svg>
+            </button>
+          </div>
+          <div class="rating-labels">
+            <span class="rating-label">CASUALS</span>
+            <span class="rating-label">SHARKS</span>
+          </div>
+        </div>
+
+        <!-- Card 8: Wait Time (no selection) -->
+        <div class="rating-card">
+          <div class="rating-card-header">
+            <div class="rating-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="rgba(232, 215, 176, 0.6)"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div class="rating-card-info">
+              <h3 class="rating-card-title">Wait Time</h3>
+              <p class="rating-card-subtitle">TABLE AVAILABILITY</p>
+            </div>
+            <span class="rating-card-value">--</span>
+          </div>
+          <div class="pool-ball-selector">
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b1-wt" cx="30%" cy="30%"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b1-wt)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">1</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b2-wt" cx="30%" cy="30%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1d4ed8"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b2-wt)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">2</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b3-wt" cx="30%" cy="30%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b3-wt)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">3</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b4-wt" cx="30%" cy="30%"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#7e22ce"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b4-wt)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">4</text></svg>
+            </button>
+            <button class="pool-ball-btn">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="b5-wt" cx="30%" cy="30%"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#c2410c"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#b5-wt)"/><circle cx="35" cy="35" r="12" fill="rgba(255,255,255,0.4)"/><circle cx="50" cy="50" r="18" fill="white"/><text x="50" y="58" font-size="24" font-weight="bold" fill="black" text-anchor="middle">5</text></svg>
+            </button>
+          </div>
+          <div class="rating-labels">
+            <span class="rating-label">LONG WAITS</span>
+            <span class="rating-label">NO WAIT</span>
+          </div>
+        </div>
+
+      </div><!-- /rating-grid -->
+
+      <div class="notes-card">
+        <div class="notes-header">
+          <div class="notes-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+          </div>
+          <div class="notes-info">
+            <h3 class="notes-title">Notes</h3>
+            <p class="notes-subtitle">SHARE ADDITIONAL THOUGHTS OR DETAILS</p>
+          </div>
+        </div>
+        <textarea class="notes-textarea" placeholder="What stood out to you? Any specific recommendations or warnings for other players?"></textarea>
+      </div>
+
+      <div class="overall-submit-row">
+        <div class="overall-experience">
+          <div class="overall-experience-label">OVERALL EXPERIENCE</div>
+          <div class="overall-experience-value">-- <span>/ 5.0</span></div>
+        </div>
+        <button class="submit-btn">
+          SUBMIT REVIEW
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+      </div>
+      <div class="submit-section">
+        <p class="submit-disclaimer">By submitting this review, you certify that this feedback is based on your own experience and is your genuine opinion of this establishment.</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
