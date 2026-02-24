@@ -1624,13 +1624,19 @@
 
     if (currentUser) {
       var initial = currentUser.username.charAt(0).toUpperCase();
+      var userReviewCount = countUserReviews(currentUser.id);
       container.innerHTML =
-        '<div class="user-info"><div class="user-name">' + escapeHtml(currentUser.username) + '</div></div>' +
-        '<div class="user-avatar">' + escapeHtml(initial) + '<span class="online-dot"></span></div>';
+        '<div class="user-avatar rating-avatar-btn" id="rating-avatar-btn" style="cursor:pointer;">' +
+          escapeHtml(initial) +
+        '</div>' +
+        '<div class="header-user-dropdown rating-user-dropdown" id="rating-user-dropdown">' +
+          '<div class="header-dropdown-name">' + escapeHtml(currentUser.username) + '</div>' +
+          '<div class="header-dropdown-reviews">' + userReviewCount + ' review' + (userReviewCount !== 1 ? 's' : '') + '</div>' +
+          '<button class="header-dropdown-signout" id="rating-sign-out">Sign Out</button>' +
+        '</div>';
     } else {
       container.innerHTML =
-        '<div class="user-info"><div class="user-name">Anonymous</div></div>' +
-        '<div class="user-avatar">?<span class="online-dot" style="display:none;"></span></div>';
+        '<span class="header-sign-in rating-sign-in" id="rating-sign-in">Sign In</span>';
     }
   }
 
@@ -1746,24 +1752,48 @@
       updateHeaderAuthUI();
     });
 
-    // Header avatar dropdown toggle
+    // Avatar dropdown toggle (header + rating page)
     document.addEventListener('click', function(e) {
-      var avatar = e.target.closest('#header-avatar-btn');
-      if (avatar) {
-        var dropdown = document.getElementById('header-user-dropdown');
-        if (dropdown) dropdown.classList.toggle('open');
+      var headerAvatar = e.target.closest('#header-avatar-btn');
+      var ratingAvatar = e.target.closest('#rating-avatar-btn');
+
+      if (headerAvatar) {
+        var dd = document.getElementById('header-user-dropdown');
+        if (dd) dd.classList.toggle('open');
+        // Close rating dropdown if open
+        var rdd = document.getElementById('rating-user-dropdown');
+        if (rdd) rdd.classList.remove('open');
         return;
       }
-      var dropdown = document.getElementById('header-user-dropdown');
-      if (dropdown && !e.target.closest('.header-user-dropdown')) {
-        dropdown.classList.remove('open');
+      if (ratingAvatar) {
+        var dd = document.getElementById('rating-user-dropdown');
+        if (dd) dd.classList.toggle('open');
+        // Close header dropdown if open
+        var hdd = document.getElementById('header-user-dropdown');
+        if (hdd) hdd.classList.remove('open');
+        return;
+      }
+
+      // Close all dropdowns if clicking outside
+      var hd = document.getElementById('header-user-dropdown');
+      if (hd && !e.target.closest('.header-user-dropdown')) hd.classList.remove('open');
+      var rd = document.getElementById('rating-user-dropdown');
+      if (rd && !e.target.closest('.rating-user-dropdown')) rd.classList.remove('open');
+    });
+
+    // Sign out via event delegation (header + rating page)
+    document.addEventListener('click', async function(e) {
+      if (e.target.closest('#header-sign-out') || e.target.closest('#rating-sign-out')) {
+        await supabase.auth.signOut();
       }
     });
 
-    // Sign out via event delegation
-    document.addEventListener('click', async function(e) {
-      if (e.target.closest('#header-sign-out')) {
-        await supabase.auth.signOut();
+    // Rating page "Sign In" link opens auth modal
+    document.addEventListener('click', function(e) {
+      if (e.target.id === 'rating-sign-in' || e.target.closest('#rating-sign-in')) {
+        setAuthMode(false);
+        form.reset();
+        overlay.classList.add('open');
       }
     });
   }

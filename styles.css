@@ -1765,6 +1765,14 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  position: relative;
+}
+.rating-user-dropdown {
+  top: calc(100% + 8px);
+  right: 0;
+}
+.rating-sign-in {
+  font-size: 0.9rem;
 }
 .user-info {
   text-align: right;
