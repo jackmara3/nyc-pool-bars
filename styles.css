@@ -2212,6 +2212,204 @@ body {
   }
 }
 
+/* ===== Leaderboard Header Link ===== */
+.header-leaderboard-link {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #0a2216;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.header-leaderboard-link:hover {
+  color: #d4af37;
+  text-decoration: underline;
+}
+
+/* ===== Leaderboard UI ===== */
+.leaderboard-ui {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: linear-gradient(170deg, #0a2216 0%, #122d26 40%, #193830 100%);
+  overflow-y: auto;
+  display: none;
+}
+.leaderboard-ui.open {
+  display: block;
+}
+.leaderboard-ui-content {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+.leaderboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+}
+.leaderboard-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: rgba(232, 215, 176, 0.6);
+}
+
+/* --- Podium --- */
+.lb-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+  padding: 0 1rem;
+}
+.lb-podium-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  max-width: 180px;
+}
+.lb-trophy {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+.lb-podium-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: #0a2216;
+}
+.lb-avatar-1 {
+  background: linear-gradient(135deg, #ffd700, #e8b800);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  width: 68px;
+  height: 68px;
+  font-size: 1.5rem;
+}
+.lb-avatar-2 {
+  background: linear-gradient(135deg, #c0c0c0, #a8a8a8);
+}
+.lb-avatar-3 {
+  background: linear-gradient(135deg, #cd7f32, #b86e28);
+}
+.lb-podium-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  color: #e8d7b0;
+  text-align: center;
+  word-break: break-word;
+}
+.lb-podium-stats {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: rgba(232, 215, 176, 0.5);
+  letter-spacing: 0.05em;
+}
+.lb-podium-first {
+  order: 2;
+}
+.lb-podium-first .lb-trophy {
+  font-size: 2.2rem;
+}
+.lb-podium-first .lb-podium-name {
+  font-size: 1.15rem;
+}
+.lb-podium-second {
+  order: 1;
+}
+.lb-podium-third {
+  order: 3;
+}
+
+/* --- List (#4+) --- */
+.lb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.lb-list-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  border: 1px solid rgba(232, 215, 176, 0.08);
+}
+.lb-list-rank {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: rgba(232, 215, 176, 0.4);
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.lb-list-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(232, 215, 176, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #e8d7b0;
+  flex-shrink: 0;
+}
+.lb-list-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #e8d7b0;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lb-list-stat {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: rgba(232, 215, 176, 0.45);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* --- Empty State --- */
+.lb-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+.lb-empty-icon {
+  font-size: 3rem;
+}
+.lb-empty-text {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: rgba(232, 215, 176, 0.5);
+  max-width: 300px;
+  line-height: 1.6;
+}
+
 /* ===== Mobile Layout ===== */
 .mobile-toggle {
   display: none;
@@ -2373,5 +2571,37 @@ body {
   /* --- Add bottom padding for toggle button --- */
   .bar-list {
     padding-bottom: 5rem;
+  }
+
+  /* --- Leaderboard mobile --- */
+  .header-leaderboard-link {
+    font-size: 0.85rem;
+  }
+  .leaderboard-ui-content {
+    padding: 1.5rem 1rem 3rem;
+  }
+  .leaderboard-header {
+    margin-bottom: 1.5rem;
+  }
+  .lb-podium {
+    gap: 0.5rem;
+    padding: 0;
+  }
+  .lb-podium-avatar {
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
+  }
+  .lb-avatar-1 {
+    width: 56px;
+    height: 56px;
+    font-size: 1.3rem;
+  }
+  .lb-podium-name {
+    font-size: 0.85rem;
+  }
+  .lb-list-row {
+    padding: 0.6rem 0.75rem;
+    gap: 0.5rem;
   }
 }
