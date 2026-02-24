@@ -1606,7 +1606,6 @@
       container.innerHTML =
         '<div class="header-user-avatar" id="header-avatar-btn" style="cursor:pointer;">' +
           escapeHtml(initial) +
-          '<span class="header-online-dot"></span>' +
         '</div>' +
         '<div class="header-user-dropdown" id="header-user-dropdown">' +
           '<div class="header-dropdown-name">' + escapeHtml(currentUser.username) + '</div>' +
