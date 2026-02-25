@@ -1368,7 +1368,7 @@ body {
   font-family: var(--font-display);
   font-size: 1.1rem;
   font-weight: 700;
-  color: #d4af37;
+  color: #ffffff;
 }
 .review-card-notes {
   font-family: var(--font-display);
@@ -1403,14 +1403,14 @@ body {
 }
 .review-card-breakdown {
   display: none;
-  flex-direction: column;
-  gap: 0.15rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1.5rem;
   margin-top: 0.4rem;
   padding-top: 0.4rem;
   border-top: 1px solid rgba(232, 215, 176, 0.08);
 }
 .review-card-breakdown.open {
-  display: flex;
+  display: grid;
 }
 .review-rating-row {
   display: flex;
@@ -1428,7 +1428,7 @@ body {
   font-family: var(--font-display);
   font-size: 0.7rem;
   font-weight: 600;
-  color: #d4af37;
+  color: #ffffff;
 }
 
 /* ===== Tip Box ===== */
