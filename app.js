@@ -157,6 +157,26 @@
     return div.innerHTML;
   }
 
+  // Username profanity filter
+  var BLOCKED_WORDS = [
+    'ass','asshole','bastard','bitch','bollocks','cock','crap','cunt',
+    'damn','dick','dildo','douche','fag','faggot','fuck','goddamn',
+    'hell','homo','jerkoff','kike','motherfucker','nazi','nigga',
+    'nigger','piss','pussy','retard','shit','slut','spic','tits',
+    'twat','wank','whore','anus','ballsack','blowjob','boner',
+    'buttplug','cameltoe','chink','clit','cooter','cumshot','deepthroat',
+    'felch','fisting','gringo','handjob','jackass','jizz','knobend',
+    'milf','muff','nutsack','pedo','prick','queef','rimjob','schlong',
+    'skank','smegma','spunk','taint','tosser','tranny','wanker'
+  ];
+  function isUsernameClean(name) {
+    var lower = name.toLowerCase();
+    for (var i = 0; i < BLOCKED_WORDS.length; i++) {
+      if (lower.indexOf(BLOCKED_WORDS[i]) !== -1) return false;
+    }
+    return true;
+  }
+
   function renderStars(score) {
     const maxStars = 5;
     const normalizedScore = score ? (score / 5) * maxStars : 0;
@@ -1737,6 +1757,24 @@
           var username = document.getElementById('auth-username').value.trim();
           if (!username) {
             errorEl.textContent = 'Username is required.';
+            errorEl.style.display = 'block';
+            errorEl.style.color = '#b55a5a';
+            return;
+          }
+          if (username.length < 3) {
+            errorEl.textContent = 'Username must be at least 3 characters.';
+            errorEl.style.display = 'block';
+            errorEl.style.color = '#b55a5a';
+            return;
+          }
+          if (username.length > 20) {
+            errorEl.textContent = 'Username must be 20 characters or less.';
+            errorEl.style.display = 'block';
+            errorEl.style.color = '#b55a5a';
+            return;
+          }
+          if (!isUsernameClean(username)) {
+            errorEl.textContent = 'That username is not available. Please choose another.';
             errorEl.style.display = 'block';
             errorEl.style.color = '#b55a5a';
             return;
