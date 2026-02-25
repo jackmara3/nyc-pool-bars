@@ -375,26 +375,6 @@
       color: #ffffff;
       line-height: 1.2;
     }
-    .ranked-badge {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      margin-top: 0.15rem;
-    }
-    .ranked-badge-diamond {
-      width: 8px;
-      height: 8px;
-      border: 1.5px solid var(--gold-dim);
-      transform: rotate(45deg);
-      flex-shrink: 0;
-    }
-    .ranked-badge-text {
-      font-family: var(--font-body);
-      font-size: 0.6rem;
-      font-weight: 500;
-      letter-spacing: 0.06em;
-      color: var(--cream-dim);
-    }
     .ranked-stats {
       display: flex;
       gap: 1.25rem;
@@ -554,161 +534,10 @@
       </section>
 
       <!-- Podium (Top 3) -->
-      <section class="podium">
-
-        <!-- #1 — Center -->
-        <div class="podium-slot podium-slot--1">
-          <div class="podium-trophy">&#x1f3c6;</div>
-          <div class="podium-avatar">A</div>
-          <div class="podium-card">
-            <div class="podium-name">Alex Rivera</div>
-            <div class="podium-stats">
-              <div class="podium-stat-row">
-                <span class="podium-stat-label">Reviews</span>
-                <span class="podium-stat-value">42</span>
-              </div>
-              <div class="podium-stat-row">
-                <span class="podium-stat-label">Bars</span>
-                <span class="podium-stat-value">18</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- #2 — Left -->
-        <div class="podium-slot podium-slot--2">
-          <div class="podium-trophy">&#x1f948;</div>
-          <div class="podium-avatar">J</div>
-          <div class="podium-card">
-            <div class="podium-name">Jordan Hayes</div>
-            <div class="podium-stats">
-              <div class="podium-stat-row">
-                <span class="podium-stat-label">Reviews</span>
-                <span class="podium-stat-value">38</span>
-              </div>
-              <div class="podium-stat-row">
-                <span class="podium-stat-label">Bars</span>
-                <span class="podium-stat-value">15</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- #3 — Right -->
-        <div class="podium-slot podium-slot--3">
-          <div class="podium-trophy">&#x1f949;</div>
-          <div class="podium-avatar">S</div>
-          <div class="podium-card">
-            <div class="podium-name">Sam Taylor</div>
-            <div class="podium-stats">
-              <div class="podium-stat-row">
-                <span class="podium-stat-label">Reviews</span>
-                <span class="podium-stat-value">35</span>
-              </div>
-              <div class="podium-stat-row">
-                <span class="podium-stat-label">Bars</span>
-                <span class="podium-stat-value">12</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </section>
+      <section class="podium" id="lb-podium"></section>
 
       <!-- Ranked List (#4+) -->
-      <div class="ranked-list">
-
-        <div class="ranked-row">
-          <span class="ranked-rank">4</span>
-          <div class="ranked-avatar">C</div>
-          <div class="ranked-info">
-            <div class="ranked-name">Casey Morgan</div>
-          </div>
-          <div class="ranked-stats">
-            <div class="ranked-stat">
-              <span class="ranked-stat-label">Reviews</span>
-              <span class="ranked-stat-value">29</span>
-            </div>
-            <div class="ranked-stat">
-              <span class="ranked-stat-label">Bars</span>
-              <span class="ranked-stat-value">11</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="ranked-row">
-          <span class="ranked-rank">5</span>
-          <div class="ranked-avatar">T</div>
-          <div class="ranked-info">
-            <div class="ranked-name">Taylor Quinn</div>
-          </div>
-          <div class="ranked-stats">
-            <div class="ranked-stat">
-              <span class="ranked-stat-label">Reviews</span>
-              <span class="ranked-stat-value">24</span>
-            </div>
-            <div class="ranked-stat">
-              <span class="ranked-stat-label">Bars</span>
-              <span class="ranked-stat-value">9</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="ranked-row">
-          <span class="ranked-rank">6</span>
-          <div class="ranked-avatar">J</div>
-          <div class="ranked-info">
-            <div class="ranked-name">Jamie Lane</div>
-          </div>
-          <div class="ranked-stats">
-            <div class="ranked-stat">
-              <span class="ranked-stat-label">Reviews</span>
-              <span class="ranked-stat-value">18</span>
-            </div>
-            <div class="ranked-stat">
-              <span class="ranked-stat-label">Bars</span>
-              <span class="ranked-stat-value">8</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="ranked-row">
-          <span class="ranked-rank">7</span>
-          <div class="ranked-avatar">R</div>
-          <div class="ranked-info">
-            <div class="ranked-name">Riley Woods</div>
-          </div>
-          <div class="ranked-stats">
-            <div class="ranked-stat">
-              <span class="ranked-stat-label">Reviews</span>
-              <span class="ranked-stat-value">15</span>
-            </div>
-            <div class="ranked-stat">
-              <span class="ranked-stat-label">Bars</span>
-              <span class="ranked-stat-value">6</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="ranked-row">
-          <span class="ranked-rank">8</span>
-          <div class="ranked-avatar">M</div>
-          <div class="ranked-info">
-            <div class="ranked-name">Morgan Lee</div>
-          </div>
-          <div class="ranked-stats">
-            <div class="ranked-stat">
-              <span class="ranked-stat-label">Reviews</span>
-              <span class="ranked-stat-value">12</span>
-            </div>
-            <div class="ranked-stat">
-              <span class="ranked-stat-label">Bars</span>
-              <span class="ranked-stat-value">5</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
+      <div class="ranked-list" id="lb-ranked"></div>
 
     </div>
   </div>
@@ -791,6 +620,132 @@
         await sb.auth.signOut();
       }
     });
+
+    // ===== Leaderboard Data =====
+    var trophies = ['\u{1F3C6}', '\u{1F948}', '\u{1F949}'];
+
+    async function loadLeaderboard() {
+      var { data: reviews, error } = await sb
+        .from('reviews')
+        .select('user_id, username, bar_id')
+        .not('user_id', 'is', null);
+
+      if (error || !reviews) {
+        console.error('Error loading leaderboard:', error);
+        return;
+      }
+
+      // Aggregate per user
+      var userMap = {};
+      reviews.forEach(function(r) {
+        if (!userMap[r.user_id]) {
+          userMap[r.user_id] = {
+            user_id: r.user_id,
+            username: r.username || 'Anonymous',
+            reviews: 0,
+            bars: {}
+          };
+        }
+        userMap[r.user_id].reviews++;
+        userMap[r.user_id].bars[r.bar_id] = true;
+      });
+
+      // Sort by total reviews descending
+      var ranked = Object.values(userMap)
+        .map(function(u) {
+          return { username: u.username, reviews: u.reviews, bars: Object.keys(u.bars).length };
+        })
+        .sort(function(a, b) { return b.reviews - a.reviews; });
+
+      renderPodium(ranked.slice(0, 3));
+      renderRankedList(ranked.slice(3));
+    }
+
+    function renderPodium(top) {
+      var podium = document.getElementById('lb-podium');
+      if (top.length === 0) {
+        podium.style.display = 'none';
+        return;
+      }
+
+      // For 1-2 users, center them
+      if (top.length < 3) {
+        podium.style.justifyContent = 'center';
+      }
+
+      var html = '';
+
+      // Always render #1
+      html += podiumCard(top[0], 1);
+
+      // Render #2 if exists
+      if (top.length >= 2) {
+        html += podiumCard(top[1], 2);
+      }
+
+      // Render #3 if exists
+      if (top.length >= 3) {
+        html += podiumCard(top[2], 3);
+      }
+
+      podium.innerHTML = html;
+    }
+
+    function podiumCard(user, rank) {
+      var initial = user.username.charAt(0).toUpperCase();
+      return '<div class="podium-slot podium-slot--' + rank + '">' +
+        '<div class="podium-trophy">' + trophies[rank - 1] + '</div>' +
+        '<div class="podium-avatar">' + initial + '</div>' +
+        '<div class="podium-card">' +
+          '<div class="podium-name">' + user.username + '</div>' +
+          '<div class="podium-stats">' +
+            '<div class="podium-stat-row">' +
+              '<span class="podium-stat-label">Reviews</span>' +
+              '<span class="podium-stat-value">' + user.reviews + '</span>' +
+            '</div>' +
+            '<div class="podium-stat-row">' +
+              '<span class="podium-stat-label">Bars</span>' +
+              '<span class="podium-stat-value">' + user.bars + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function renderRankedList(rest) {
+      var list = document.getElementById('lb-ranked');
+      if (rest.length === 0) {
+        list.style.display = 'none';
+        return;
+      }
+
+      var html = '';
+      rest.forEach(function(user, i) {
+        var rank = i + 4;
+        var initial = user.username.charAt(0).toUpperCase();
+        html += '<div class="ranked-row">' +
+          '<span class="ranked-rank">' + rank + '</span>' +
+          '<div class="ranked-avatar">' + initial + '</div>' +
+          '<div class="ranked-info">' +
+            '<div class="ranked-name">' + user.username + '</div>' +
+          '</div>' +
+          '<div class="ranked-stats">' +
+            '<div class="ranked-stat">' +
+              '<span class="ranked-stat-label">Reviews</span>' +
+              '<span class="ranked-stat-value">' + user.reviews + '</span>' +
+            '</div>' +
+            '<div class="ranked-stat">' +
+              '<span class="ranked-stat-label">Bars</span>' +
+              '<span class="ranked-stat-value">' + user.bars + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      });
+
+      list.innerHTML = html;
+    }
+
+    loadLeaderboard();
   })();
   </script>
 </body>
