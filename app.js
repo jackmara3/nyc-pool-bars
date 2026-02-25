@@ -493,9 +493,6 @@
       });
       html += '</div></div>';
 
-      html += '<div class="modal-footer">';
-      html += '<span class="modal-footer-text">Ratings updated in real-time • Community verified</span>';
-      html += '</div>';
     }
 
     html += '</div>';

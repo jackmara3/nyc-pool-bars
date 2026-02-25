@@ -1305,7 +1305,7 @@ body {
   flex-direction: column;
   gap: 0.5rem;
   margin-top: 0.5rem;
-  max-height: 300px;
+  max-height: 360px;
   overflow-y: auto;
 }
 .all-reviews-section.expanded .all-reviews-list {
