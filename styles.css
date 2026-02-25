@@ -1779,6 +1779,14 @@ body {
   justify-content: space-between;
   margin-bottom: 1.5rem;
 }
+.rating-header .back-btn {
+  flex: 1;
+}
+.rating-header .user-profile {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
 .back-btn {
   display: flex;
   align-items: center;
@@ -1803,7 +1811,6 @@ body {
   stroke: #d4af37;
 }
 .rating-title {
-  flex: 1;
   text-align: center;
   font-family: var(--font-display);
   font-size: 0.8rem;
