@@ -498,16 +498,9 @@
           html += '</div>';
           html += '<div class="review-card-breakdown" id="' + reviewId + '">';
           ratedKeys.forEach(function(key) {
-            var ball = ratingToBall(ratingMap[key]);
-            var progressColor = PROGRESS_COLORS[ball] || PROGRESS_COLORS[3];
-            var progressWidth = (ball / 5) * 100;
-            var ballId = reviewId + '-' + key;
             html += '<div class="review-rating-row">';
             html += '<span class="review-rating-label">' + escapeHtml(RATING_LABELS[key]) + '</span>';
-            html += '<div class="review-progress-wrap">';
-            html += '<div class="review-progress-bar" style="width: ' + progressWidth + '%; background: ' + progressColor + ';"></div>';
-            html += '</div>';
-            html += '<span class="review-ball-wrap">' + poolBallSvg(ball, ballId) + '</span>';
+            html += '<span class="review-rating-value">' + ratingMap[key] + '</span>';
             html += '</div>';
           });
           html += '</div>';
