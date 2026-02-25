@@ -456,8 +456,9 @@
         return new Date(b.created_at) - new Date(a.created_at);
       });
       sortedReviews.forEach(function(review) {
-        var reviewUsername = review.username || review.reviewer_name || 'Anonymous';
-        var initial = reviewUsername.replace(/^@/, '').charAt(0).toUpperCase();
+        var isAnonymous = !review.user_id;
+        var reviewUsername = isAnonymous ? 'Anonymous' : (review.username || review.reviewer_name || 'Anonymous');
+        var initial = isAnonymous ? '?' : reviewUsername.replace(/^@/, '').charAt(0).toUpperCase();
         var date = new Date(review.created_at);
         var dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         html += '<div class="review-card">';
