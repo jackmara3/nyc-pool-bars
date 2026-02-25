@@ -455,21 +455,12 @@
       var sortedReviews = (bar.reviews || []).slice().sort(function(a, b) {
         return new Date(b.created_at) - new Date(a.created_at);
       });
-      sortedReviews.forEach(function(review) {
+      sortedReviews.forEach(function(review, idx) {
         var isAnonymous = !review.user_id;
         var reviewUsername = isAnonymous ? 'Anonymous' : (review.username || review.reviewer_name || 'Anonymous');
         var initial = isAnonymous ? '?' : reviewUsername.replace(/^@/, '').charAt(0).toUpperCase();
         var date = new Date(review.created_at);
         var dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        html += '<div class="review-card">';
-        html += '<div class="review-card-header">';
-        html += '<div class="review-card-user">';
-        html += '<div class="review-card-avatar">' + escapeHtml(initial) + '</div>';
-        html += '<span class="review-card-username">' + escapeHtml(reviewUsername) + '</span>';
-        html += '</div>';
-        html += '<span class="review-card-date">' + escapeHtml(dateStr) + '</span>';
-        html += '</div>';
-        html += '<div class="review-card-ratings">';
         var ratingMap = {
           tableQuality: review.table_quality,
           competitionLevel: review.competition,
@@ -480,14 +471,46 @@
           drinkSelection: review.drink_selection,
           crowdVibe: review.crowd_vibe,
         };
-        RATING_KEYS.forEach(function(key) {
-          if (ratingMap[key] != null) {
-            html += '<span class="review-card-rating">' + escapeHtml(RATING_LABELS[key]) + ': <span class="review-card-rating-value">' + ratingMap[key] + '</span></span>';
-          }
-        });
+        var ratedKeys = RATING_KEYS.filter(function(key) { return ratingMap[key] != null; });
+        var sum = ratedKeys.reduce(function(acc, key) { return acc + ratingMap[key]; }, 0);
+        var avg = ratedKeys.length > 0 ? (sum / ratedKeys.length).toFixed(1) : '--';
+        var avgBall = ratedKeys.length > 0 ? ratingToBall(sum / ratedKeys.length) : 3;
+        var reviewId = 'rev-' + bar.id + '-' + idx;
+
+        html += '<div class="review-card">';
+        html += '<div class="review-card-header">';
+        html += '<div class="review-card-user">';
+        html += '<div class="review-card-avatar">' + escapeHtml(initial) + '</div>';
+        html += '<span class="review-card-username">' + escapeHtml(reviewUsername) + '</span>';
+        html += '</div>';
+        html += '<div class="review-card-right">';
+        html += '<span class="review-card-date">' + escapeHtml(dateStr) + '</span>';
+        html += '<span class="review-card-avg">' + avg + '</span>';
+        html += '</div>';
         html += '</div>';
         if (review.notes) {
           html += '<div class="review-card-notes">"' + escapeHtml(review.notes) + '"</div>';
+        }
+        if (ratedKeys.length > 0) {
+          html += '<div class="review-card-breakdown-toggle" data-target="' + reviewId + '">';
+          html += '<span>See full breakdown</span>';
+          html += '<span class="review-card-breakdown-arrow">&#9660;</span>';
+          html += '</div>';
+          html += '<div class="review-card-breakdown" id="' + reviewId + '">';
+          ratedKeys.forEach(function(key) {
+            var ball = ratingToBall(ratingMap[key]);
+            var progressColor = PROGRESS_COLORS[ball] || PROGRESS_COLORS[3];
+            var progressWidth = (ball / 5) * 100;
+            var ballId = reviewId + '-' + key;
+            html += '<div class="review-rating-row">';
+            html += '<span class="review-rating-label">' + escapeHtml(RATING_LABELS[key]) + '</span>';
+            html += '<div class="review-progress-wrap">';
+            html += '<div class="review-progress-bar" style="width: ' + progressWidth + '%; background: ' + progressColor + ';"></div>';
+            html += '</div>';
+            html += '<span class="review-ball-wrap">' + poolBallSvg(ball, ballId) + '</span>';
+            html += '</div>';
+          });
+          html += '</div>';
         }
         html += '</div>';
       });
@@ -517,6 +540,18 @@
         if (section) section.classList.toggle('expanded');
       });
     }
+
+    // Individual review breakdown toggles
+    content.addEventListener('click', function(e) {
+      var toggle = e.target.closest('.review-card-breakdown-toggle');
+      if (!toggle) return;
+      var targetId = toggle.getAttribute('data-target');
+      var breakdown = document.getElementById(targetId);
+      if (breakdown) {
+        var isOpen = breakdown.classList.toggle('open');
+        toggle.classList.toggle('open', isOpen);
+      }
+    });
 
     if (!handlingPopState) {
       history.pushState({ view: 'detail', barId: bar.id }, '');
