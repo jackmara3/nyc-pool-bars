@@ -891,7 +891,7 @@ body {
   color: #5a6b5a;
 }
 .directions-link {
-  display: inline-block;
+  align-self: flex-start;
   color: #1a3a2a;
   cursor: pointer;
   text-transform: uppercase;
