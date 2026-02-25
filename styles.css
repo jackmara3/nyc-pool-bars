@@ -90,7 +90,7 @@ body {
   transform: translateY(-50%);
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
   z-index: 10;
 }
 .header-user-name {
@@ -1556,7 +1556,7 @@ body {
   margin: 0 1rem 0.5rem;
   padding: 0.45rem 0.75rem;
   background: transparent;
-  border: 1px dashed rgba(212, 175, 55, 0.35);
+  border: 1px solid rgba(232, 215, 176, 0.12);
   border-radius: 6px;
   color: rgba(212, 175, 55, 0.7);
   font-family: var(--font-display);
@@ -1567,7 +1567,7 @@ body {
   text-align: left;
 }
 .suggest-bar-btn:hover {
-  border-color: rgba(212, 175, 55, 0.6);
+  border-color: rgba(212, 175, 55, 0.25);
   color: #d4af37;
   background: rgba(212, 175, 55, 0.05);
 }
@@ -2283,6 +2283,7 @@ body {
 .header-leaderboard-link:hover {
   color: #d4af37;
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* ===== Mobile Layout ===== */
