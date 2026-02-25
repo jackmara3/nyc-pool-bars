@@ -102,37 +102,86 @@
       display: flex;
       align-items: center;
       gap: 0.6rem;
-    }
-    .nav-profile-info {
-      text-align: right;
-    }
-    .nav-profile-label {
-      font-family: var(--font-body);
-      font-size: 0.6rem;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--cream-dim);
-    }
-    .nav-profile-name {
-      font-family: var(--font-display);
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--cream);
+      position: relative;
     }
     .nav-avatar {
-      width: 36px;
-      height: 36px;
-      background: var(--emerald-card);
+      width: 40px;
+      height: 40px;
+      background: #1a3a2a;
       border: 2px solid var(--gold);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-family: var(--font-display);
-      font-size: 0.9rem;
+      font-size: 1rem;
       font-weight: 600;
       color: var(--gold);
+      cursor: pointer;
+    }
+    .nav-sign-in {
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--gold);
+      cursor: pointer;
+      transition: color 0.2s ease;
+      text-decoration: none;
+    }
+    .nav-sign-in:hover {
+      color: var(--cream);
+      text-decoration: underline;
+    }
+    .nav-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 200px;
+      background: #e8d7b0;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      padding: 0.75rem 1rem;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-6px);
+      transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+      z-index: 100;
+    }
+    .nav-dropdown.open {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .nav-dropdown-name {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 600;
+      color: #0a2216;
+      margin-bottom: 0.25rem;
+    }
+    .nav-dropdown-reviews {
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      color: #5a6b5a;
+      margin-bottom: 0.5rem;
+    }
+    .nav-dropdown-signout {
+      display: block;
+      width: 100%;
+      padding: 0.4rem 0.75rem;
+      background: #1a3a2a;
+      color: #e8d7b0;
+      border: none;
+      border-radius: 6px;
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-align: center;
+    }
+    .nav-dropdown-signout:hover {
+      background: #0a2216;
     }
 
     /* ===== Hero ===== */
@@ -443,9 +492,6 @@
       .lb-nav {
         margin-bottom: 1.75rem;
       }
-      .nav-profile-info {
-        display: none;
-      }
       .lb-hero-title {
         font-size: 2.2rem;
       }
@@ -534,12 +580,8 @@
           BACK TO LIST
         </a>
         <span class="nav-label"></span>
-        <div class="nav-profile">
-          <div class="nav-profile-info">
-            <div class="nav-profile-label">Profile</div>
-            <div class="nav-profile-name">User #429</div>
-          </div>
-          <div class="nav-avatar">J</div>
+        <div class="nav-profile" id="lb-profile">
+          <span class="nav-sign-in" id="lb-sign-in">Sign In</span>
         </div>
       </nav>
 
@@ -756,5 +798,85 @@
     </div>
   </div>
 
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="../config.js"></script>
+  <script>
+  (function() {
+    var sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+    var container = document.getElementById('lb-profile');
+
+    function renderProfile(user, reviewCount) {
+      if (user) {
+        var initial = user.username.charAt(0).toUpperCase();
+        container.innerHTML =
+          '<div class="nav-avatar" id="lb-avatar-btn">' +
+            initial +
+          '</div>' +
+          '<div class="nav-dropdown" id="lb-dropdown">' +
+            '<div class="nav-dropdown-name">' + user.username + '</div>' +
+            '<div class="nav-dropdown-reviews">' + reviewCount + ' review' + (reviewCount !== 1 ? 's' : '') + '</div>' +
+            '<button class="nav-dropdown-signout" id="lb-sign-out">Sign Out</button>' +
+          '</div>';
+      } else {
+        container.innerHTML = '<a class="nav-sign-in" href="/">Sign In</a>';
+      }
+    }
+
+    function parseUser(supaUser) {
+      if (!supaUser) return null;
+      return {
+        id: supaUser.id,
+        email: supaUser.email,
+        username: supaUser.user_metadata && supaUser.user_metadata.username
+          ? supaUser.user_metadata.username
+          : supaUser.email.split('@')[0]
+      };
+    }
+
+    function loadReviewCount(userId) {
+      return sb.from('reviews').select('id', { count: 'exact', head: true }).eq('user_id', userId)
+        .then(function(res) { return res.count || 0; });
+    }
+
+    async function updateProfile(supaUser) {
+      var user = parseUser(supaUser);
+      var count = 0;
+      if (user) {
+        count = await loadReviewCount(user.id);
+      }
+      renderProfile(user, count);
+    }
+
+    // Check initial session
+    sb.auth.getUser().then(function(resp) {
+      updateProfile(resp.data && resp.data.user ? resp.data.user : null);
+    });
+
+    // Listen for auth changes
+    sb.auth.onAuthStateChange(function(event, session) {
+      updateProfile(session && session.user ? session.user : null);
+    });
+
+    // Avatar dropdown toggle
+    document.addEventListener('click', function(e) {
+      var avatar = e.target.closest('#lb-avatar-btn');
+      var dropdown = document.getElementById('lb-dropdown');
+      if (avatar && dropdown) {
+        dropdown.classList.toggle('open');
+        return;
+      }
+      if (dropdown && !e.target.closest('.nav-dropdown')) {
+        dropdown.classList.remove('open');
+      }
+    });
+
+    // Sign out
+    document.addEventListener('click', async function(e) {
+      if (e.target.closest('#lb-sign-out')) {
+        await sb.auth.signOut();
+      }
+    });
+  })();
+  </script>
 </body>
 </html>
