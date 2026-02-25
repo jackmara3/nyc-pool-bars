@@ -534,18 +534,6 @@
       });
     }
 
-    // Individual review breakdown toggles
-    content.addEventListener('click', function(e) {
-      var toggle = e.target.closest('.review-card-breakdown-toggle');
-      if (!toggle) return;
-      var targetId = toggle.getAttribute('data-target');
-      var breakdown = document.getElementById(targetId);
-      if (breakdown) {
-        var isOpen = breakdown.classList.toggle('open');
-        toggle.classList.toggle('open', isOpen);
-      }
-    });
-
     if (!handlingPopState) {
       history.pushState({ view: 'detail', barId: bar.id }, '');
     }
@@ -1101,6 +1089,18 @@
     document.getElementById('detail-close').addEventListener('click', function() { closeDetail(); });
     document.getElementById('modal-overlay').addEventListener('click', (e) => {
       if (e.target.id === 'modal-overlay') closeDetail();
+    });
+
+    // Individual review breakdown toggles (delegated, registered once)
+    document.getElementById('detail-content').addEventListener('click', function(e) {
+      var toggle = e.target.closest('.review-card-breakdown-toggle');
+      if (!toggle) return;
+      var targetId = toggle.getAttribute('data-target');
+      var breakdown = document.getElementById(targetId);
+      if (breakdown) {
+        var isOpen = breakdown.classList.toggle('open');
+        toggle.classList.toggle('open', isOpen);
+      }
     });
   }
 
