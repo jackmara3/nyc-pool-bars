@@ -890,23 +890,19 @@ body {
   font-style: italic;
   color: #5a6b5a;
 }
-.info-card-sub.link {
+.directions-link {
   color: #1a3a2a;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
   text-transform: uppercase;
   font-style: normal;
   font-size: 0.6rem;
   letter-spacing: 0.05em;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
 }
-.info-card-sub.link::after {
-  content: "→";
-  font-size: 0.75rem;
-}
-.info-card-sub.link:hover {
-  text-decoration: underline;
+.directions-link:hover {
+  border-bottom-color: #1a3a2a;
 }
 
 /* ===== See All Hours Toggle ===== */
