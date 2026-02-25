@@ -2286,6 +2286,14 @@ body {
   text-underline-offset: 3px;
 }
 
+/* ===== Mobile Menu (hidden on desktop) ===== */
+.mobile-menu-btn {
+  display: none;
+}
+.mobile-menu {
+  display: none;
+}
+
 /* ===== Mobile Layout ===== */
 .mobile-toggle {
   display: none;
@@ -2317,20 +2325,112 @@ body {
   .header-user-name {
     display: none;
   }
-  .header-user-avatar {
-    width: 32px;
-    height: 32px;
-    font-size: 0.85rem;
+  .header-leaderboard-link {
+    display: none;
   }
-  .header-online-dot {
-    width: 8px;
-    height: 8px;
-    bottom: 1px;
-    right: 1px;
-    border-width: 1.5px;
+  .header-user-avatar {
+    display: none;
+  }
+  .header-user-dropdown {
+    display: none !important;
   }
   .header-sign-in {
-    font-size: 0.85rem;
+    display: none;
+  }
+  .header-online-dot {
+    display: none;
+  }
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: #0a2216;
+    cursor: pointer;
+    padding: 0.25rem;
+  }
+  .mobile-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 220px;
+    background: #e8d7b0;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    padding: 0.75rem 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 100;
+  }
+  .mobile-menu.open {
+    display: flex;
+  }
+  .mobile-menu-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(10, 34, 22, 0.1);
+  }
+  .mobile-menu-avatar {
+    width: 36px;
+    height: 36px;
+    background: #1a3a2a;
+    border: 2px solid #d4af37;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ffffff;
+    flex-shrink: 0;
+  }
+  .mobile-menu-info {
+    display: flex;
+    flex-direction: column;
+  }
+  .mobile-menu-name {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0a2216;
+  }
+  .mobile-menu-reviews {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    color: #5a6b5a;
+  }
+  .mobile-menu-item {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #0a2216;
+    text-decoration: none;
+    padding: 0.4rem 0;
+    cursor: pointer;
+  }
+  .mobile-menu-signout {
+    display: block;
+    width: 100%;
+    padding: 0.4rem 0.75rem;
+    background: #1a3a2a;
+    color: #e8d7b0;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    margin-top: 0.25rem;
+  }
+  .mobile-menu-signout:hover {
+    background: #0a2216;
   }
 
   /* --- Main layout: stack sidebar and map --- */
@@ -2449,8 +2549,4 @@ body {
     padding-bottom: 5rem;
   }
 
-  /* --- Leaderboard link mobile --- */
-  .header-leaderboard-link {
-    font-size: 0.85rem;
-  }
 }

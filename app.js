@@ -1626,11 +1626,17 @@
     var container = document.getElementById('header-user');
     if (!container) return;
 
+    var hamburger = '<button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">' +
+      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+      '<line x1="3" y1="6" x2="21" y2="6"></line>' +
+      '<line x1="3" y1="12" x2="21" y2="12"></line>' +
+      '<line x1="3" y1="18" x2="21" y2="18"></line>' +
+      '</svg></button>';
     var lbLink = '<a class="header-leaderboard-link" href="/leaderboard/">Leaderboard</a>';
     if (currentUser) {
       var initial = currentUser.username.charAt(0).toUpperCase();
       var userReviewCount = countUserReviews(currentUser.id);
-      container.innerHTML = lbLink +
+      container.innerHTML = hamburger + lbLink +
         '<div class="header-user-avatar" id="header-avatar-btn" style="cursor:pointer;">' +
           escapeHtml(initial) +
         '</div>' +
@@ -1638,9 +1644,25 @@
           '<div class="header-dropdown-name">' + escapeHtml(currentUser.username) + '</div>' +
           '<div class="header-dropdown-reviews">' + userReviewCount + ' review' + (userReviewCount !== 1 ? 's' : '') + '</div>' +
           '<button class="header-dropdown-signout" id="header-sign-out">Sign Out</button>' +
+        '</div>' +
+        '<div class="mobile-menu" id="mobile-menu">' +
+          '<div class="mobile-menu-profile">' +
+            '<div class="mobile-menu-avatar">' + escapeHtml(initial) + '</div>' +
+            '<div class="mobile-menu-info">' +
+              '<div class="mobile-menu-name">' + escapeHtml(currentUser.username) + '</div>' +
+              '<div class="mobile-menu-reviews">' + userReviewCount + ' review' + (userReviewCount !== 1 ? 's' : '') + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<a class="mobile-menu-item" href="/leaderboard/">Leaderboard</a>' +
+          '<button class="mobile-menu-signout" id="mobile-menu-sign-out">Sign Out</button>' +
         '</div>';
     } else {
-      container.innerHTML = lbLink + '<span class="header-sign-in" id="header-sign-in">Sign In</span>';
+      container.innerHTML = hamburger + lbLink +
+        '<span class="header-sign-in" id="header-sign-in">Sign In</span>' +
+        '<div class="mobile-menu" id="mobile-menu">' +
+          '<span class="mobile-menu-item mobile-menu-signin" id="mobile-menu-sign-in">Sign In</span>' +
+          '<a class="mobile-menu-item" href="/leaderboard/">Leaderboard</a>' +
+        '</div>';
     }
   }
 
@@ -1807,9 +1829,11 @@
       if (rd && !e.target.closest('.rating-user-dropdown')) rd.classList.remove('open');
     });
 
-    // Sign out via event delegation (header + rating page)
+    // Sign out via event delegation (header + rating page + mobile menu)
     document.addEventListener('click', async function(e) {
-      if (e.target.closest('#header-sign-out') || e.target.closest('#rating-sign-out')) {
+      if (e.target.closest('#header-sign-out') || e.target.closest('#rating-sign-out') || e.target.closest('#mobile-menu-sign-out')) {
+        var mm = document.getElementById('mobile-menu');
+        if (mm) mm.classList.remove('open');
         await supabase.auth.signOut();
       }
     });
@@ -1820,6 +1844,29 @@
         setAuthMode(false);
         form.reset();
         overlay.classList.add('open');
+      }
+    });
+
+    // Mobile menu hamburger toggle
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('#mobile-menu-btn')) {
+        var mm = document.getElementById('mobile-menu');
+        if (mm) mm.classList.toggle('open');
+        return;
+      }
+      // Mobile menu "Sign In" opens auth modal
+      if (e.target.closest('#mobile-menu-sign-in')) {
+        var mm = document.getElementById('mobile-menu');
+        if (mm) mm.classList.remove('open');
+        setAuthMode(false);
+        form.reset();
+        overlay.classList.add('open');
+        return;
+      }
+      // Close mobile menu when clicking outside
+      var mm = document.getElementById('mobile-menu');
+      if (mm && !e.target.closest('.mobile-menu') && !e.target.closest('#mobile-menu-btn')) {
+        mm.classList.remove('open');
       }
     });
   }
